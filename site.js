@@ -509,7 +509,7 @@ $('copy-request').addEventListener('click',async()=>{
 // Keep detailed information available without stacking every full section.
 (()=>{
  const main=document.querySelector('main');
- const information=[...main.children].filter(node=>node.tagName==='SECTION'&&!node.classList.contains('hero')&&!node.classList.contains('needs-section')&&!['teklif','veri-bilgisi','baslangic','kapsamlar','teslim-deneyimi'].includes(node.id));
+ const information=[...main.children].filter(node=>node.tagName==='SECTION'&&!node.classList.contains('hero')&&!node.classList.contains('needs-section')&&!['tanitim-video','teklif','veri-bilgisi','baslangic','kapsamlar','teslim-deneyimi'].includes(node.id));
  information.sort((a,b)=>{const order=['hizmet','senaryolar'];return (order.includes(a.id)?order.indexOf(a.id):2)-(order.includes(b.id)?order.indexOf(b.id):2);});
  const accordions=[];
  information.forEach((section,index)=>{
