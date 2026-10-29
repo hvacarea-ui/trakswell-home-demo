@@ -99,13 +99,38 @@
     for(let z=cz-d/2;z<cz+d/2;z+=.65) grout.push({x:cx,y:.116,z,sx:w,sy:.005,sz:.012});
   }
   instanced(new T.BoxGeometry(1,1,1), mat('#8b8b85'), grout, {castShadow:false});
-  wall(0,-4.6,12.3,.18,0,-1);wall(-6.1,0,.18,9.2,-1,0);wall(6.1,0,.18,9.2,1,0);wall(0,4.6,12.3,.18,0,1);
-  // Interior divisions have real thickness and door openings.
-  box(.75,1.1,-2.55,.16,2.2,4.0,plaster);
-  box(-3.9,.8,.9,4.3,1.6,.16,plaster);
-  box(4.25,.8,.9,3.6,1.6,.16,plaster);
-  box(-1.95,.8,3.1,.16,1.6,2.8,plaster);
-  box(1.95,.8,3.1,.16,1.6,2.8,plaster);
+  // Openings are gaps in the geometry, with jambs and an open door leaf.
+  function partition(x,z,length,axis,openings=[],y=0,height=2.6,cutaway=false){
+    const g=new T.Group();house.add(g);
+    const piece=(a,b,h,cy)=>{if(b-a<.01)return;box(x+(axis==='x'?(a+b)/2:0),y+cy,z+(axis==='z'?(a+b)/2:0),axis==='x'?b-a:.16,h,axis==='z'?b-a:.16,plaster,g);};
+    let edge=-length/2;
+    for(const {at=0,width=1,door=true} of openings.slice().sort((a,b)=>a.at-b.at)){
+      const a=at-width/2,b=at+width/2;piece(edge,a,height,height/2);
+      if(height>2.12)piece(a,b,height-2.12,2.12+(height-2.12)/2);
+      for(const p of [a,b])box(x+(axis==='x'?p:0),y+1.07,z+(axis==='z'?p:0),axis==='x'?.065:.22,2.14,axis==='z'?.065:.22,trim);
+      box(x+(axis==='x'?at:0),y+2.14,z+(axis==='z'?at:0),axis==='x'?width+.12:.22,.08,axis==='z'?width+.12:.22,trim);
+      if(door){const hinge=new T.Group();hinge.position.set(x+(axis==='x'?a:0),y,z+(axis==='z'?a:0));hinge.rotation.y=(axis==='x'?0:-Math.PI/2)-Math.PI*.36;house.add(hinge);box(width/2,1.03,0,width,2.06,.055,oak,hinge);box(width-.13,1.0,.05,.10,.035,.055,brass,hinge);}
+      edge=b;
+    }
+    piece(edge,length/2,height,height/2);
+    if(cutaway)walls.push({group:g,nx:axis==='z'?Math.sign(x):0,nz:axis==='x'?Math.sign(z):0});
+    return g;
+  }
+  partition(0,-4.6,12.3,'x',[{at:0,width:1.5,door:false}],0,2.6,true);
+  wall(-6.1,0,.18,9.2,-1,0);wall(6.1,0,.18,9.2,1,0);
+  partition(0,4.6,12.3,'x',[{at:-4,width:1.25,door:false},{at:0,width:1.3}],0,2.6,true);
+  partition(-1.15,-1.85,5.5,'z',[{at:1.4,width:1.2}],0,1.6);
+  partition(1.15,-1.85,5.5,'z',[{at:1.4,width:1.2}],0,1.6);
+  box(-3.65,.8,.9,4.9,1.6,.16,plaster);box(3.65,.8,.9,4.9,1.6,.16,plaster);
+  partition(-1.95,2.75,3.7,'z',[{at:-.75,width:1.1}],0,1.6);
+  partition(1.95,2.75,3.7,'z',[{at:-1,width:1},{at:.9,width:.9}],0,1.6);
+  // The entrance continues through a clear central hall, never through a bedroom.
+  box(0,.12,-1.8,2.15,.035,5.4,mat('#c3b29b'));
+  box(-1.55,.8,.9,.8,1.6,.16,plaster);box(1.55,.8,.9,.8,1.6,.16,plaster);
+  // Separate WC, reached directly from the entrance hall.
+  box(2.8,.8,2.72,1.7,1.6,.12,plaster);box(3.65,.8,3.66,.12,1.6,1.88,plaster);
+  box(3.35,.7,3.7,.28,1.1,.65,porcelain);sphere(2.98,.46,3.7,.49,.25,.32,porcelain);
+  sphere(2.92,.66,3.7,.32,.025,.21,mat('#b8b7b1'));box(2.48,1.0,4.31,.55,.16,.36,porcelain);
   // Rear windows and curtains (both have depth, mounted on rear wall).
   const glass=mat('#789aa8',.22,.15);
   const curtainPleat=new T.BoxGeometry(.085,2.15,.09);
@@ -130,11 +155,11 @@
   box(-4.72,.88,-3.3,.55,.18,.5,teal).rotation.z=-.2;
   cylinder(-2.8,.5,-2.2,.77,.77,.13,oak);cylinder(-2.8,.27,-2.2,.25,.36,.4,charcoal);
   box(-2.65,.6,-2.3,.38,.045,.3,cream);cylinder(-3,.63,-2.05,.1,.08,.16,porcelain);
-  box(.35,.33,-2.7,.65,.5,2.6,oak);
-  const tv=box(.3,1.15,-2.7,.12,1.15,2.25,charcoal);
-  const screen=box(.22,1.15,-2.7,.025,1.02,2.08,new T.MeshStandardMaterial({color:'#17202c',emissive:'#5085b0',emissiveIntensity:.25}));tvScreens.push(screen);
+  box(-1.5,.33,-2.7,.45,.5,2.6,oak);
+  const tv=box(-1.5,1.15,-2.7,.12,1.15,2.25,charcoal);
+  const screen=box(-1.58,1.15,-2.7,.025,1.02,2.08,new T.MeshStandardMaterial({color:'#17202c',emissive:'#5085b0',emissiveIntensity:.25}));tvScreens.push(screen);
   // Accent chair, floor lamp and shelving.
-  box(-1.3,.46,-3.65,.88,.55,.8,teal);box(-1.3,.9,-4.0,.9,.7,.16,teal);
+  box(-2.1,.46,-3.65,.88,.55,.8,teal);box(-2.1,.9,-4.0,.9,.7,.16,teal);
   cylinder(-5.5,.15,-.2,.3,.3,.06,brass);
   cylinder(-5.5,1.1,-.2,.035,.035,2,brass);cylinder(-5.5,2.03,-.2,.34,.49,.4,lampGlass('salon'));
   const bedroomStart=house.children.length;
@@ -161,13 +186,17 @@
   box(3,1.8,1.03,1.2,.8,.06,mat('#93a7b0',.12,.8));
   const terraceStart=house.children.length;
   // Terrace and planting give the house a grounded architectural setting.
-  box(-2,-.15,5.7,8,.25,2,mat('#c3b5a0'));
-  cylinder(-3,.49,5.8,.7,.7,.1,oak);cylinder(-3,.2,5.8,.08,.12,.5,charcoal);
-  for(const x of [-4.1,-1.9]){box(x,.3,5.8,.66,.12,.65,fabric);box(x,.6,6.1,.66,.6,.1,fabric);}
+  box(-4,-.15,5.7,4.2,.25,2,mat('#c3b5a0'));
+  cylinder(-4,.49,5.8,.45,.45,.1,oak);cylinder(-4,.2,5.8,.08,.12,.5,charcoal);
+  for(const x of [-4.85,-3.15]){box(x,.3,5.8,.56,.12,.6,fabric);box(x,.6,6.08,.56,.6,.1,fabric);}
+  for(let x=-6;x<=-2;x+=.5)box(x,.5,6.66,.04,1,.04,charcoal);
+  box(-4,1.03,6.66,4.2,.06,.06,brass);
+  for(const x of [-6.05,-1.95]){box(x,1.03,5.7,.06,.06,2,brass);for(const z of [4.8,5.4,6,6.6])box(x,.5,z,.04,1,.04,charcoal);}
+  box(0,-.13,5.2,1.95,.25,1.2,stone);
   const terraceObjects=house.children.slice(terraceStart);
   function plant(x,z,size=1){cylinder(x,.22,z,.23,.18,.44,mat('#bba88f'));cylinder(x,.7,z,.025,.04,1,oak);for(let i=0;i<7;i++){const a=i*2.4;sphere(x+Math.cos(a)*.22*size,1+Math.sin(i)*.25,z+Math.sin(a)*.22*size,.19*size,.38*size,.12*size,mat(i%2?'#51654a':'#778166'));}}
-  plant(-5.7,-3.8);plant(.2,-.05,.8);plant(5.6,4.0);
-  const outdoorPlantStart=house.children.length;plant(-5.5,5.8);plant(1.4,5.8);terraceObjects.push(...house.children.slice(outdoorPlantStart));
+  plant(-5.7,-3.8);plant(-1.6,.45,.65);plant(5.6,4.0);
+  const outdoorPlantStart=house.children.length;plant(-5.65,6.2,.7);terraceObjects.push(...house.children.slice(outdoorPlantStart));
   // Physical fixtures remain visible when off; their diffusers follow room dimming.
   function pendant(room,x,z,radius,drop) {
     cylinder(x,2.66,z,.13,.13,.07,charcoal);
@@ -201,32 +230,59 @@
   const tablet=new T.Mesh(new T.PlaneGeometry(1.02,.62),new T.MeshBasicMaterial({map:panelTexture,color:panelTexture?'#ffffff':'#7894b8',side:T.DoubleSide}));
   tablet.rotation.y=Math.PI/2;tablet.position.set(-1.77,1.4,2.8);house.add(tablet);
   panelTargets.push(tablet);
-  cylinder(-1.3,.26,-.3,.28,.3,.5,oak);
-  cylinder(-1.3,.72,-.3,.19,.21,.42,charcoal);
-  const speakerRing=cylinder(-1.3,.94,-.3,.195,.195,.025,new T.MeshStandardMaterial({color:'#5597b4',emissive:'#55c8ff',emissiveIntensity:0}));
-  for(let i=0;i<8;i++)box(-1.3,.58+i*.035,-.09,.24,.012,.015,mat('#6e7782'));
+  cylinder(-2,.26,.32,.28,.3,.5,oak);
+  cylinder(-2,.72,.32,.19,.21,.42,charcoal);
+  const speakerRing=cylinder(-2,.94,.32,.195,.195,.025,new T.MeshStandardMaterial({color:'#5597b4',emissive:'#55c8ff',emissiveIntensity:0}));
+  for(let i=0;i<8;i++)box(-2,.58+i*.035,.53,.24,.012,.015,mat('#6e7782'));
   const sensorLEDs=[];
   function sensor(x,y,z,id){
     box(x,y,z,.28,.22,.12,porcelain);
     const led=sphere(x,y-.04,z+.075,.035,.035,.025,new T.MeshStandardMaterial({color:'#75c4cf',emissive:'#75c4cf',emissiveIntensity:.3}));sensorLEDs.push({id,led});
   }
-  sensor(-1.15,1.85,-4.25,'sensor-co');sensor(1.25,1.85,-4.25,'sensor-heat');sensor(.63,1.1,-.7,'sensor-vibration');
+  sensor(-1.15,1.85,-4.25,'sensor-co');sensor(1.25,1.85,-4.25,'sensor-heat');sensor(1.15,1.1,.35,'sensor-vibration');
   sensor(-3.35,.22,2.4,'sensor-kitchen');sensor(4.45,.22,3.5,'sensor-bath');
   // Etiketler 3B dokuya çizilmez; ekrandaki konuma yansıtılan HTML öğeleridir.
   // Böylece model küçük görünse de yazı boyutu sabit ve okunur kalır.
   const deviceLabels=[];
+  const deviceHelp={
+    'Duvar paneli ↗':['Duvar paneli','Işıkları, perdeleri ve ev senaryolarını tek ekrandan yönetin. Kumandayı açmak için dokunun.'],
+    'Akıllı ses':['Akıllı ses sistemi','Uyumlu hoparlörlerden müzik, kapı zili ve senaryo bildirimleri duyabilirsiniz.'],
+    'CO':['Karbonmonoksit sensörü','Karbonmonoksit artışını algılayan uyumlu sensör, sesli uyarı ve telefon bildirimi başlatabilir.'],
+    'Isı':['Sıcaklık sensörü','Oda sıcaklığını ölçer; uyumlu ısıtma ve soğutma cihazları seçtiğiniz hedefe göre çalışır.'],
+    'Su':['Su kaçağı sensörü','Zemindeki suyu algılar ve bildirim gönderir. Uyumlu motorlu vana varsa suyu kapatma senaryosu eklenebilir.'],
+    'Titreşim':['Titreşim sensörü','Kapı veya penceredeki olağan dışı titreşimi algılayarak belirlediğiniz uyarıyı başlatabilir.'],
+    'Dış kapı kamerası':['Dış kapı kamerası','Kapınızdaki ziyaretçiyi uyumlu kamera üzerinden görmenizi ve telefonunuza bildirim gelmesini sağlar.']
+  };
+  const tooltip=document.createElement('div');tooltip.id='device-tooltip';tooltip.className='device-tooltip';tooltip.role='tooltip';tooltip.hidden=true;
+  const tipTitle=document.createElement('strong'),tipText=document.createElement('p');tooltip.append(tipTitle,tipText);host.append(tooltip);
+  let tipNode=null,tipTimer;
+  function hideTip(){clearTimeout(tipTimer);if(tipNode)tipNode.removeAttribute('aria-describedby');tooltip.hidden=true;tipNode=null;}
+  function positionTip(){
+    if(!tipNode)return;if(tipNode.hidden||!house.visible){hideTip();return;}
+    const r=tipNode.getBoundingClientRect(),h=host.getBoundingClientRect();
+    tooltip.style.left=Math.max(8,Math.min(host.clientWidth-tooltip.offsetWidth-8,r.left-h.left+r.width/2-tooltip.offsetWidth/2))+'px';
+    const above=r.top-h.top-tooltip.offsetHeight-9;
+    tooltip.style.top=Math.max(8,Math.min(host.clientHeight-tooltip.offsetHeight-8,above>=8?above:r.bottom-h.top+9))+'px';
+  }
+  function showTip(node,text){clearTimeout(tipTimer);if(tipNode&&tipNode!==node)tipNode.removeAttribute('aria-describedby');tipNode=node;const info=deviceHelp[text];tipTitle.textContent=info[0];tipText.textContent=info[1];tooltip.hidden=false;node.setAttribute('aria-describedby',tooltip.id);positionTip();}
+  function deferTip(){clearTimeout(tipTimer);tipTimer=setTimeout(()=>{if(!tooltip.matches(':hover')&&!tipNode?.matches(':hover,:focus'))hideTip();},160);}
+  tooltip.addEventListener('pointerenter',()=>clearTimeout(tipTimer));tooltip.addEventListener('pointerleave',deferTip);
+  host.addEventListener('keydown',e=>{if(e.key==='Escape')hideTip();});
+  document.addEventListener('pointerdown',e=>{if(!tooltip.contains(e.target)&&!e.target.closest('.device-label'))hideTip();});
   function deviceLabel(text,x,y,z,action){
     const anchor=new T.Object3D();anchor.position.set(x,y,z);house.add(anchor);
-    const node=document.createElement(action?'button':'span');node.className='device-label';node.textContent=text;node.hidden=true;
-    if(action){node.type='button';node.setAttribute('aria-label',action.label);node.addEventListener('click',action.run);}
-    else node.setAttribute('aria-hidden','true');
+    const node=document.createElement('button');node.type='button';node.className='device-label';node.textContent=text;node.hidden=true;
+    node.setAttribute('aria-label',action?.label||deviceHelp[text][0]+' hakkında bilgi');
+    node.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')showTip(node,text);});
+    node.addEventListener('pointerleave',deferTip);node.addEventListener('focus',()=>showTip(node,text));node.addEventListener('blur',deferTip);
+    node.addEventListener('click',()=>{showTip(node,text);if(action){hideTip();action.run();}});
     host.append(node);deviceLabels.push({node,anchor});return anchor;
   }
   deviceLabel('Duvar paneli ↗',-1.8,2.05,2.8,{label:'Duvar paneli kontrollerini aç',run:()=>window.dispatchEvent(new CustomEvent('open-wall-panel'))});
-  deviceLabel('Akıllı ses',-1.3,1.3,-.3);
+  deviceLabel('Akıllı ses',-2,1.3,.32);
   deviceLabel('CO',-1.15,2.2,-4.2);deviceLabel('Isı',1.25,2.2,-4.2);
   deviceLabel('Su',-3.35,.65,2.4);deviceLabel('Su',4.45,.65,3.5);
-  deviceLabel('Titreşim',.6,1.55,-.7);
+  deviceLabel('Titreşim',1.15,1.55,.35);
   const robotDock=new T.Vector3(-4.1,0,-.25);
   const chargingBase=box(robotDock.x,.2,robotDock.z+.38,.8,.38,.28,charcoal);
   const robotStart=house.children.length;
@@ -294,11 +350,19 @@
     box(x,y+1.1,z-1.85,3.95,2.2,.14,plaster);
     box(x-1.93,y+.85,z,.14,1.7,3.7,plaster);
     box(x+1.93,y+.85,z,.14,1.7,3.7,plaster);
+    partition(x,z+1.9,3.95,'x',[{at:1.2,width:.95}],y,1.3);
     if(study){box(x,y+.75,z-1,2,.12,.8,oak);for(const dx of [-.85,.85])box(x+dx,y+.35,z-1,.08,.7,.65,charcoal);box(x,y+1.08,z-1.15,.85,.5,.08,charcoal);box(x,y+.45,z+.1,.65,.15,.65,teal);box(x,y+.8,z+.4,.65,.7,.1,teal);}
     else{box(x,y+.3,z,1.5,.45,2.6,oak);box(x,y+.58,z,1.5,.22,2.55,cream);box(x,y+.74,z+.4,1.52,.12,1.65,teal);box(x,y+.78,z-.85,1.1,.2,.48,cream);}
     cylinder(x+1.3,y+.65,z-1.2,.18,.25,.35,lampGlass('yatak'));
   }
-  const annexes=[-4,0,4].map((x,i)=>variant(()=>extraRoom(x,-6.55,0,i===2)));
+  const annexes=[-4,0,4].map((x,i)=>variant(()=>extraRoom(x,-8.15,0,i===2)));
+  const annexHalls=[1,2,3].map(count=>variant(()=>{
+    const width=count===3?12.1:8.1,cx=count===3?0:-2;
+    box(cx,-.12,-5.45,width,.24,1.7,mat('#c3b29b'));
+    box(cx-width/2,1.1,-5.45,.14,2.2,1.7,plaster);box(cx+width/2,1.1,-5.45,.14,2.2,1.7,plaster);
+    if(count===1)box(0,1.1,-6.3,3.9,2.2,.14,plaster);
+  }));
+  const rearClosure=variant(()=>box(0,1.3,-4.6,1.5,2.6,.16,plaster));
   const villaGarden=variant(()=>{
     box(2,-.4,1,20,.2,20,mat('#647950'));
     box(9,-.23,0,5.2,.18,11,mat('#ded3be'));
@@ -307,14 +371,21 @@
     for(const z of [-2.4,1.2]){box(6.8,.2,z,.85,.3,2.1,cream);box(6.8,.48,z-.65,.85,.12,.8,cream).rotation.x=-.32;}
     for(const x of [-7.5,11.4])for(const z of [-7,5,8])plant(x,z,1.5);
     for(let x=-6;x<6;x+=1.3)box(x,-.2,8,.85,.13,1.4,mat('#ccc6b8'));
-    box(0,1.25,6.6,5.6,.12,.12,oak);box(0,1.25,8.5,5.6,.12,.12,oak);
+    for(const z of [6.6,8.5]){box(0,2.8,z,5.6,.12,.12,oak);for(const x of [-2.8,2.8])box(x,1.4,z,.13,2.8,.13,oak);}
   });
   const duplexUpper=variant(()=>{
-    extraRoom(-3,-4,3.0);extraRoom(1,-4,3.0,true);
-    for(let i=0;i<12;i++)box(5.05,(.24+i*.25)/2,3.65-i*.52,1.65,.24+i*.25,.5,oak);
-    box(4.3,3,-3.1,2.3,.2,2,oak);
-    for(let i=0;i<6;i++)box(-5+i*1.3,3.55,-2.05,.04,1.1,.04,charcoal);
-    box(-1.7,4.1,-2.05,6.7,.05,.05,brass);
+    extraRoom(-3,-2.65,3.15);extraRoom(1,-2.65,3.15,true);
+    // Stairwell occupies the rear-right bay; the bathroom below remains clear.
+    for(let i=0;i<14;i++){
+      const top=(i+1)*.225,z=.35-i*.30;box(5.05,top/2,z,1.35,top,.30,oak);
+      box(4.34,top+.47,z,.04,.94,.04,charcoal);
+    }
+    const rail=box(4.34,2.6,-1.6,.055,.055,4.9,brass);rail.rotation.x=.64;
+    box(4.45,3.02,-4.05,2.6,.26,.9,oak);
+    box(3.45,3.02,-2,1,.26,4.2,oak);
+    box(-.65,3.02,-.2,8.8,.26,1.1,oak);
+    for(let i=0;i<10;i++)box(-4.9+i*.94,3.7,.37,.04,1.1,.04,charcoal);
+    box(-.65,4.25,.37,8.8,.055,.055,brass);
   });
   const office=variant(()=>{
     for(const z of [-3.2,-1.2])for(const x of [2.1,4.6]){
@@ -332,15 +403,15 @@
   };
   function changeHomeType(type){
     const count=({'2+1 daire':1,'3+1 daire':2,'4+1 daire':3,'Villa / müstakil':3})[type]||0;
-    annexes.forEach((g,i)=>g.visible=i<count);
+    annexes.forEach((g,i)=>g.visible=i<count);annexHalls.forEach((g,i)=>g.visible=i===count-1);rearClosure.visible=count===0;
     villaGarden.visible=type==='Villa / müstakil';duplexUpper.visible=type==='Dubleks';office.visible=type==='İş yeri';
-    bedroomObjects.forEach(o=>o.visible=!office.visible);
-    terraceObjects.forEach(o=>o.visible=villaGarden.visible||duplexUpper.visible);
-    homeDistance=(villaGarden.visible?37:duplexUpper.visible?31:count?30:25)*Math.max(1,1.05/camera.aspect);
+    bedroomObjects.forEach(o=>o.visible=!office.visible&&!duplexUpper.visible);
+    terraceObjects.forEach(o=>o.visible=true);
+    homeDistance=(villaGarden.visible?42:duplexUpper.visible?27:count?34:27)*Math.max(1,1.05/camera.aspect);
     distance=homeDistance;yaw=.4;elevation=.86;
     target.set(villaGarden.visible?2:0,duplexUpper.visible?1.3:.2,count?-1:.7);
     initialTarget.copy(target);
-    document.getElementById('model-description').textContent=(descriptions[type]||'Örnek yerleşim.')+' Gerçek proje ev planınıza göre hazırlanır.';
+    document.getElementById('model-description').textContent=(descriptions[type]||'Örnek yerleşim.')+' Hol, kapı geçişleri, WC ve balkon/teras örnek yerleşime dahildir. Gerçek proje ev planınıza göre hazırlanır.';
     sync();
     planEditor?.changeType(type);
   }
@@ -360,7 +431,7 @@
     planEditor?.view(yaw);
     renderer.render(scene,camera);
     const studio=isStudio();
-    const labelsOn=house.visible&&(studio||host.clientWidth>=640);
+    const labelsOn=house.visible&&host.clientWidth>=240;
     // Çakışan etiketlerden listede sonra geleni gizlenir (öncelik: dizideki sıra). Model döndürülünce
     // ya da yakınlaştırılınca gizlenen etiket yeniden görünür.
     const placed=[];
@@ -373,6 +444,7 @@
       const w=node.offsetWidth,h=node.offsetHeight,box={l:x-w/2-3,r:x+w/2+3,t:y-h-3,b:y+3};
       if(placed.some(o=>box.l<o.r&&box.r>o.l&&box.t<o.b&&box.b>o.t))node.hidden=true;else placed.push(box);
     }
+    positionTip();
     for(const {node,object} of showroomMarkers){
       const p=object.getWorldPosition(new T.Vector3()).project(camera);
       node.hidden=!house.visible||p.z < -1||p.z > 1||Math.abs(p.x)>1||Math.abs(p.y)>1;
@@ -486,7 +558,7 @@
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pinch&&pointers.size>=2){const next=pinchState();if(next.distance>0&&pinch.distance>0)zoom(pinch.distance/next.distance,next);pinch=next;return;}
     if(!drag)return;
-    if(Math.hypot(e.clientX-clickStart.x,e.clientY-clickStart.y)>=5)moved=true;
+    if(clickStart&&Math.hypot(e.clientX-clickStart.x,e.clientY-clickStart.y)>=5)moved=true;
     yaw-=(e.clientX-drag.x)*.007;elevation=T.MathUtils.clamp(elevation+(e.clientY-drag.y)*.004,.45,1.35);drag={x:e.clientX,y:e.clientY};frame();
   });
   function releasePointer(e,isUp){

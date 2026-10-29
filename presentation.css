@@ -186,3 +186,42 @@ header .youtube-channel-link:focus-visible{outline:2px solid var(--lamp);outline
 @media(max-width:520px){header .nav{gap:8px}}
 @media(max-width:440px){header .nav{gap:6px}header .brand-wordmark strong{font-size:14px}}
 @media(max-width:380px){header .brand-wordmark{display:none}}
+
+/* Homepage: a spacious house view and three rotating phone notifications. */
+.home-preview{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px;align-items:center;min-width:0}
+.plan-wrap:not(.showroom-active) .home-preview #house-3d{height:clamp(410px,51dvh,540px)}
+.notification-preview{min-width:0;color:#f4f1eb;text-align:left}
+.preview-phone{position:relative;padding:17px 14px 23px;border:5px solid #11161b;border-radius:34px;background:linear-gradient(155deg,#34434c,#19252e 57%,#122029);box-shadow:0 16px 32px #0003,inset 0 0 0 1px #67707866}
+.preview-phone:before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:60px;height:13px;background:#0d1117;border-radius:12px}
+.preview-phone-top{display:flex;justify-content:space-between;padding-inline:6px;margin-bottom:26px;font-size:.67rem;font-weight:600;color:#e6edf1}
+.preview-phone-label{font-size:.6rem!important;letter-spacing:.14em;color:#efbf70!important;margin:0 0 8px!important}
+.preview-phone h2{font-size:1.22rem;line-height:1.35;letter-spacing:-.025em;margin:0 0 22px;color:#fff}
+.notification-window{overflow:hidden;border-radius:15px;background:#f5f1e9}
+.notification-track{display:flex;transition:transform .55s cubic-bezier(.22,.68,.18,1)}
+.notification-slide{flex:0 0 100%;box-sizing:border-box;padding:15px 13px;color:#202933;min-width:0}
+.notification-app{display:flex;align-items:center;gap:5px;font-size:.54rem;font-weight:700;letter-spacing:.025em;margin-bottom:12px}
+.notification-app small{margin-left:auto;font-size:.55rem;font-weight:400;color:#59636b}
+.notification-icon{display:grid;place-items:center;width:21px;height:21px;background:#dba65a;border-radius:6px;color:#172029;font-size:.9rem}
+.notification-slide strong{display:block;font-size:.88rem;line-height:1.4;margin-bottom:7px}
+.notification-slide p{font-size:.76rem!important;line-height:1.6!important;color:#45505a!important;margin:0 0 12px!important;min-height:79px}
+.notification-tag{font-size:.62rem;color:#6f4914;border-top:1px solid #d7cbb8;display:block;padding-top:9px}
+.notification-choices{display:flex;gap:5px;margin-top:14px}
+.notification-choices button{flex:1;min-width:0;min-height:36px;border:1px solid #76858e;background:#263640;color:#f3f4f6;border-radius:9px;font-family:inherit;font-size:.72rem;font-weight:600;line-height:1.2;padding:7px 4px}
+.notification-choices button[aria-pressed=true]{background:#e5ae5d;color:#172029;border-color:#e5ae5d}
+.notification-playback{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:8px;font-size:.65rem;color:#c1ccd3}
+.notification-playback button{min-height:32px;background:transparent;border:0;color:#e1e8ec;font:inherit;padding:4px}
+.notification-preview button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.phone-home-bar{position:absolute;bottom:8px;left:36%;width:28%;height:3px;border-radius:5px;background:#cad1d6}
+.notification-demo-note{font-size:.64rem!important;line-height:1.55!important;text-align:center;margin:12px 0 0!important;color:#bbc5ce!important}
+.showroom-active .home-preview{display:flex;flex-direction:column;align-items:stretch;flex:1;min-height:0;min-width:0;overflow:hidden}
+.showroom-active .home-preview #house-3d{width:100%}
+.showroom-active .notification-preview{display:none}
+#house-3d .device-label{touch-action:manipulation}
+#house-3d .device-label:focus-visible{outline:2px solid #fff;outline-offset:3px;z-index:6}
+#house-3d .device-tooltip{position:absolute;z-index:8;box-sizing:border-box;width:270px;max-width:calc(100% - 16px);padding:14px 16px;border:1px solid #c99b57;border-radius:12px;background:#111b25;color:#eef3f7;box-shadow:0 10px 35px #0008;pointer-events:auto;text-align:left}
+#house-3d .device-tooltip strong{display:block;font-size:.85rem;color:#f0bd72}
+#house-3d .device-tooltip p{font-size:.78rem;line-height:1.55;margin:7px 0 0;color:#e1e7ec}
+#house-3d .device-tooltip[hidden]{display:none}
+@media(min-width:1400px){main>.hero>.wrap{max-width:1260px}.home-preview{grid-template-columns:minmax(0,1fr) 280px;gap:26px}}
+@media(max-width:760px){.home-preview{grid-template-columns:minmax(0,1fr);gap:18px}.plan-wrap:not(.showroom-active) .home-preview #house-3d{height:390px}.notification-preview{max-width:320px;width:100%;margin-inline:auto}.preview-phone{padding-inline:18px}.preview-phone h2{font-size:1.15rem;margin-bottom:15px}.preview-phone-top{margin-bottom:20px}.notification-slide p{min-height:60px}.notification-demo-note{margin-top:8px!important}}
+@media(prefers-reduced-motion:reduce){.notification-track{transition:none}}

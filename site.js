@@ -387,7 +387,7 @@ $('f').addEventListener('submit',e=>{
   requestPlan=window.TrakswellExperience?.getPlan()||(window.TrakswellPlan?.isEnabled()?window.TrakswellPlan.getExport():null);
   if(requestPlan){
     lines.push('','Müşterinin hazırladığı ev planı: '+requestPlan.homeType,
-      'Oda sayısı: '+requestPlan.rooms.length+' · Alan: '+requestPlan.rooms.reduce((sum,r)=>sum+r.width*r.depth,0).toFixed(1)+' m²',
+      'Plandaki alan sayısı: '+requestPlan.rooms.length+' · Alan: '+requestPlan.rooms.reduce((sum,r)=>sum+r.width*r.depth,0).toFixed(1)+' m²',
       ...requestPlan.rooms.map(r=>r.name+': '+r.width+' × '+r.depth+' m, kat '+r.floor),
       'Tam ölçüler ve yerleşim plan dosyasındadır. Plan dosyasını bu e-postaya ayrıca ekleyeceğim.');
   }
