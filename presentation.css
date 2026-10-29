@@ -168,7 +168,7 @@ main>details.site-information{max-width:none;width:min(var(--page-max),calc(100%
   .showroom-active .tour-panel{max-height:85px}
 }
 
-.promo-video{padding-block:48px;background:#f4f1ea}.promo-video h2{font-size:clamp(1.7rem,3vw,2.6rem);margin:12px 0}.promo-video video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#14191e;border-radius:16px;margin-top:24px}.promo-video-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin:16px 0;font-size:.9rem}.promo-video-links a{color:#79501a}.promo-video details{margin-top:18px}.promo-video details p{max-width:80ch}.promo-video summary{min-height:44px;cursor:pointer}
+.promo-video{padding-block:48px;background:#f4f1ea}.promo-video h2{font-size:clamp(1.7rem,3vw,2.6rem);margin:12px 0}.promo-video-player{display:block;width:100%;height:auto;min-height:200px;aspect-ratio:16/9;border:0;background:#14191e;border-radius:16px;margin-top:24px}.promo-video-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;font-size:.9rem}.promo-video-links a{display:inline-flex;align-items:center;min-height:44px;color:#79501a}.promo-video details{margin-top:18px}.promo-video details p{max-width:80ch}.promo-video summary{min-height:44px;cursor:pointer}
 
 /* Use the same circular identity as the YouTube channel; keep the name readable at nav size. */
 header .brand{flex:none;gap:12px}
