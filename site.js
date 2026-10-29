@@ -322,13 +322,26 @@ $('flt').addEventListener('click',e=>{const b=e.target.closest('.chip-l');if(!b)
 // İşletme iletişim bilgileri: WhatsApp için ülke koduyla yalnızca rakam girin.
 const CONTACT = { whatsapp: '', email: '' };
 let requestPlan=null;
+// One textual summary serves both the form preview and the downloadable request.
+// The editor owns the item catalog so exported item IDs always use its labels.
+function describeRequestPlan(data){
+  if(!data||!Array.isArray(data.rooms))return [];
+  const description=window.TrakswellPlan?.describe?.(data);
+  if(Array.isArray(description))return description.filter(line=>typeof line==='string');
+  // Earlier editor versions have room measurements but no room item selections.
+  const area=data.rooms.filter(r=>!['balkon','teras'].includes(r.kind)).reduce((sum,r)=>sum+r.width*r.depth,0);
+  const floors=Math.max(1,...data.rooms.map(r=>r.floor+1));
+  return [data.homeType+' · '+floors+' kat · İç alan: '+area.toFixed(1)+' m²',
+    'Plandaki alan sayısı: '+data.rooms.length,
+    ...data.rooms.map(r=>r.name+' · '+(r.floor===0?'Zemin kat':r.floor+'. kat')+' · '+r.width+' × '+r.depth+' m')];
+}
 $('download-request-plan').addEventListener('click',()=>{if(requestPlan)window.TrakswellPlan?.download(requestPlan);});
-window.addEventListener('plan-changed',()=>{$('request-result').hidden=true;$('ok').hidden=true;requestPlan=null;});
+window.addEventListener('plan-changed',()=>{if(window.TrakswellExperience?.isPlanPresentationChange?.())return;$('request-result').hidden=true;$('ok').hidden=true;requestPlan=null;});
 let selectedProject='';
 function syncHomeType(source){
-  const value=source.value;$('konut').value=value;$('model-type').value=value;
+  const value=source.value,restoring=window.TrakswellExperience?.isRestoringPlan?.(),savedQuote=restoring?window.TrakswellExperience?.getPlan():null;$('konut').value=savedQuote?.homeType||value;$('model-type').value=value;
   $('model-type-label').textContent='3B model / '+value;
-  $('request-result').hidden=true;$('ok').hidden=true;
+  if(!window.TrakswellExperience?.isRestoringPlan?.()){$('request-result').hidden=true;$('ok').hidden=true;}
   window.dispatchEvent(new CustomEvent('home-type-change',{detail:value}));
 }
 $('model-type').addEventListener('change',()=>syncHomeType($('model-type')));
@@ -355,7 +368,7 @@ menuToggle.addEventListener('click',()=>{const open=menuToggle.getAttribute('ari
 mainMenu.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menuToggle.getAttribute('aria-expanded')==='true'){closeMenu();menuToggle.focus();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.nav'))closeMenu();});
-matchMedia('(min-width:881px)').addEventListener('change',closeMenu);
+matchMedia('(min-width:1101px)').addEventListener('change',closeMenu);
 if(CONTACT.whatsapp){$('business-phone').hidden=false;$('phone-link').textContent='+'+CONTACT.whatsapp;$('phone-link').href='tel:+'+CONTACT.whatsapp;}
 if(CONTACT.email){$('business-email').hidden=false;$('email-link').textContent=CONTACT.email;$('email-link').href='mailto:'+CONTACT.email;}
 if(CONTACT.whatsapp||CONTACT.email)$('delivery-note').textContent='Önce talebinizi kontrol edin, ardından WhatsApp veya e-posta uygulamanızda gönderimi tamamlayın. Form bilgileri bu sayfada kaydedilmez.';
@@ -383,13 +396,11 @@ $('f').addEventListener('submit',e=>{
   if(selectedProject)lines.push('Proje başlangıcı: '+selectedProject);
   const priorities=window.TrakswellPreferences?.summary();if(priorities)lines.push('Yaşam önceliklerim: '+priorities);
   const experience=window.TrakswellExperience?.summary();if(experience)lines.push(experience);
-  lines.push('Şehir / ilçe: '+($('ilce').value.trim()||'Belirtilmedi'),'Konut tipi: '+$('konut').value,'İlgilenilen sistemler: '+systems,'İletişim tercihi: '+preference,'Not: '+($('not').value.trim()||'Yok'));
   requestPlan=window.TrakswellExperience?.getPlan()||(window.TrakswellPlan?.isEnabled()?window.TrakswellPlan.getExport():null);
+  lines.push('Şehir / ilçe: '+($('ilce').value.trim()||'Belirtilmedi'),'Konut tipi: '+(requestPlan?.homeType||$('konut').value),'İlgilenilen sistemler: '+systems,'İletişim tercihi: '+preference,'Not: '+($('not').value.trim()||'Yok'));
   if(requestPlan){
-    lines.push('','Müşterinin hazırladığı ev planı: '+requestPlan.homeType,
-      'Plandaki alan sayısı: '+requestPlan.rooms.length+' · Alan: '+requestPlan.rooms.reduce((sum,r)=>sum+r.width*r.depth,0).toFixed(1)+' m²',
-      ...requestPlan.rooms.map(r=>r.name+': '+r.width+' × '+r.depth+' m, kat '+r.floor),
-      'Tam ölçüler ve yerleşim plan dosyasındadır. Plan dosyasını bu e-postaya ayrıca ekleyeceğim.');
+    lines.push('','Müşterinin hazırladığı ev planı:',...describeRequestPlan(requestPlan),
+      'Tam ölçüler ve oda içi yerleşimler plan dosyasındadır. Plan dosyası ayrıca indirilebilir.');
   }
   $('download-request-plan').hidden=!requestPlan;$('plan-email-note').hidden=!requestPlan;
   const message=lines.join('\n');
@@ -518,12 +529,43 @@ $('copy-request').addEventListener('click',async()=>{
   const summary=document.createElement('summary');summary.textContent=title.textContent;main.insertBefore(details,document.getElementById('teklif'));details.append(summary,section);accordions.push(details);
   summary.addEventListener('click',e=>{e.preventDefault();const opening=!details.open;accordions.forEach(other=>other.open=other===details&&opening);});
  });
- let navigationVersion=0;
- function reveal(hash,scroll=false){
-  if(!hash||hash==='#')return;let target;try{target=document.getElementById(decodeURIComponent(hash.slice(1)));}catch{return;}if(!target)return;
-  const details=target.closest('.site-information');if(details)accordions.forEach(other=>other.open=other===details);
-  if(scroll){const version=++navigationVersion;const schedule=window.requestAnimationFrame||((fn)=>setTimeout(fn,0));schedule(()=>schedule(()=>{if(version===navigationVersion)(details||target).scrollIntoView({block:'start',behavior:'instant'});}));}
+ const navigationLinks=[...document.querySelectorAll('header [data-section-link]')];
+ const schedule=window.requestAnimationFrame||((fn)=>setTimeout(fn,0));
+ let navigationVersion=0,activeFrame=0,targets=[],observer=null;
+ function targetFor(hash){if(!hash||hash==='#')return null;try{return document.getElementById(decodeURIComponent(hash.slice(1)));}catch{return null;}}
+ function headerOffset(){return (document.querySelector('header')?.getBoundingClientRect().height||0)+16;}
+ function updateActive(){
+  activeFrame=0;const threshold=headerOffset()+24;let current=null;
+  for(const entry of targets)if(entry.target.getClientRects().length&&entry.target.getBoundingClientRect().top<=threshold)current=entry.link;
+  for(const link of navigationLinks){if(link===current)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}
  }
- document.addEventListener('click',e=>{const link=e.target.closest('a[href^="#"]');if(!link)return;const hash=link.getAttribute('href');if(!document.getElementById(hash.slice(1)))return;e.preventDefault();reveal(hash,true);if(window.history&&window.location.hash!==hash)window.history.pushState(null,'',hash);});
- window.addEventListener('hashchange',()=>reveal(window.location.hash,true));reveal(window.location?.hash||'',!!window.location?.hash);
+ function queueActive(){if(!activeFrame)activeFrame=schedule(updateActive);}
+ function refreshTargets(){
+  targets=navigationLinks.map(link=>({link,target:targetFor(link.getAttribute('href'))})).filter(entry=>entry.target);
+  observer?.disconnect();if(window.IntersectionObserver){observer=new IntersectionObserver(queueActive,{threshold:[0,.1,.5,1]});targets.forEach(entry=>observer.observe(entry.target));}queueActive();
+ }
+ function reveal(hash,scroll=false,focus=false){
+  const target=targetFor(hash);if(!target)return;
+  // Detailed inline links still reveal their accordion; the main menu targets visible sections.
+  const details=target.closest('.site-information');if(details)accordions.forEach(other=>other.open=other===details);
+  if(scroll){const version=++navigationVersion;schedule(()=>schedule(()=>{
+   if(version!==navigationVersion)return;
+   const destination=details||target;
+   window.scrollTo({top:Math.max(0,window.scrollY+destination.getBoundingClientRect().top-headerOffset()),behavior:'instant'});
+   if(focus){const heading=target.querySelector('h1,h2,h3')||target;if(!heading.hasAttribute('tabindex'))heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
+   queueActive();
+  }));}
+ }
+ document.addEventListener('click',e=>{
+  const link=e.target.closest('a[href^="#"]');if(!link||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  const hash=link.getAttribute('href');if(!targetFor(hash))return;
+  const isNavigation=link.hasAttribute('data-section-link');if(isNavigation)closeMenu();
+  e.preventDefault();reveal(hash,true,isNavigation);if(window.history&&window.location.hash!==hash)window.history.pushState(null,'',hash);
+ });
+ window.addEventListener('hashchange',()=>reveal(window.location.hash,true));
+ window.addEventListener('scroll',queueActive,{passive:true});window.addEventListener('resize',queueActive,{passive:true});
+ document.addEventListener('toggle',queueActive,true);window.addEventListener('site-navigation-ready',refreshTargets);
+ function initializeNavigation(){refreshTargets();reveal(window.location?.hash||'',!!window.location?.hash);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeNavigation,{once:true});else initializeNavigation();
+ window.addEventListener('load',queueActive,{once:true});
 })();

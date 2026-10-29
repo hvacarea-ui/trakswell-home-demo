@@ -225,3 +225,97 @@ header .youtube-channel-link:focus-visible{outline:2px solid var(--lamp);outline
 @media(min-width:1400px){main>.hero>.wrap{max-width:1260px}.home-preview{grid-template-columns:minmax(0,1fr) 280px;gap:26px}}
 @media(max-width:760px){.home-preview{grid-template-columns:minmax(0,1fr);gap:18px}.plan-wrap:not(.showroom-active) .home-preview #house-3d{height:390px}.notification-preview{max-width:320px;width:100%;margin-inline:auto}.preview-phone{padding-inline:18px}.preview-phone h2{font-size:1.15rem;margin-bottom:15px}.preview-phone-top{margin-bottom:20px}.notification-slide p{min-height:60px}.notification-demo-note{margin-top:8px!important}}
 @media(prefers-reduced-motion:reduce){.notification-track{transition:none}}
+
+/* Navigation follows the visible page, from discovery to the request form. */
+header .nav ul{gap:clamp(12px,1.5vw,24px);font-size:.86rem}
+header [data-section-link][aria-current="location"]{color:#f1c47e;text-decoration:underline;text-underline-offset:7px;text-decoration-thickness:2px}
+header .btn[data-section-link][aria-current="location"]{color:#251b0d;text-decoration:none;box-shadow:0 0 0 2px #f8d39a}
+#sorular,#evinizde-neler-degisir,#proje-secimleri{scroll-margin-top:96px}
+@media(max-width:1100px){
+ header .nav{position:relative;gap:10px}
+ header .nav ul{display:none}
+ header .nav .btn{margin-left:auto}
+ header .nav .menu-toggle{display:block;min-height:44px}
+ header .nav ul[data-open="true"]{display:flex;position:absolute;top:100%;left:0;right:0;margin:0;flex-direction:column;gap:0;background:#1b2025;border:1px solid #444a51;border-radius:0 0 14px 14px;padding:8px 16px;box-shadow:0 14px 24px #0003}
+ header .nav ul a{display:block;min-height:44px;padding:12px}
+}
+@media(max-width:440px){header .nav{gap:6px}header .nav .btn{font-size:.76rem;padding:10px}header .nav .menu-toggle{padding:8px;font-size:.76rem}}
+
+/* Optional x-ray view. The normal home stays solid until selected. */
+#house-3d .model-transparency-toggle{position:absolute;top:12px;right:12px;z-index:4;min-height:42px;padding:9px 12px;border:1px solid #78808a;border-radius:10px;background:#20272eed;color:#f6f1e8;font:600 .78rem/1.25 var(--body);cursor:pointer;box-shadow:0 4px 12px #0002}
+#house-3d .model-transparency-toggle[aria-pressed="true"]{background:#eab668;color:#251b0d;border-color:#eab668}
+#professional-design-toggle{display:none}
+.showroom-active #professional-design-toggle{display:block;border-color:#bf9456}
+.showroom-active #professional-design-toggle[aria-pressed="true"]{background:#eab668;color:#251b0d}
+
+/* A short setup, then a selected room. Precise fields remain in disclosures. */
+#plan-editor{font-size:.8rem;line-height:1.55}
+#plan-editor [hidden],.professional-catalog[hidden]{display:none!important}
+#plan-editor p{color:#c8d0dc;font-size:.78rem;line-height:1.6}
+#plan-editor label,.professional-catalog label{display:block;font-size:.76rem;color:#e6eaf0}
+#plan-editor input:not([type=checkbox]),#plan-editor select,.professional-catalog input,.professional-catalog select{display:block;box-sizing:border-box;width:100%;min-width:0;min-height:42px;padding:8px 10px;margin-top:5px;border:1px solid #556171;border-radius:9px;background:#161d25;color:#f1f4f8;font:inherit;color-scheme:dark}
+#plan-editor button,.professional-catalog button{min-height:40px;padding:8px 11px;border:1px solid #596575;border-radius:8px;background:#2b3542;color:#edf1f5;font:600 .76rem/1.3 var(--body);cursor:pointer}
+#plan-editor button:disabled{opacity:.4;cursor:default}
+#plan-editor button[aria-pressed="true"]{background:#eab668;color:#251b0d;border-color:#eab668}
+.plan-setup{padding:14px;border:1px solid #566172;border-radius:12px;background:#232e3a}
+.plan-setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.plan-setup-grid>label:nth-child(2){grid-column:2;grid-row:1/3}
+#plan-editor .plan-check{display:flex;align-items:center;gap:8px;font-size:.72rem}
+#plan-editor input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:#eab668}
+#plan-editor #plan-generate,#plan-editor .plan-save-primary{width:100%;background:#eab668;color:#251b0d;border-color:#eab668;min-height:44px;margin-top:12px}
+.plan-setup small{display:block;color:#bec8d6;font-size:.69rem;line-height:1.5;margin-top:9px}
+#plan-editor .editor-enable{display:flex;margin:0;padding:12px 0}
+.plan-workspace-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;padding:12px 0;border-block:1px solid #454f5e}
+.plan-workspace-tools>label,.plan-mode-buttons{grid-column:1/-1}
+.plan-mode-buttons{display:flex;gap:6px}.plan-mode-buttons button{flex:1}
+#plan-editor .plan-drag-help{padding:10px 0;color:#f0c889;font-size:.72rem}
+.plan-room-selection{padding:12px;border:1px solid #576373;border-radius:10px;margin:4px 0 12px;background:#17202a}
+#plan-editor .editor-actions{gap:6px;margin-top:8px}.editor-actions button{flex:1}
+.plan-room-tools{padding:0 0 14px}.plan-room-tools h3{font-size:.95rem;margin:14px 0 10px;color:#fff}
+.plan-nudge{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.plan-item-add{display:grid;gap:8px}
+.plan-items-list{margin:12px 0;display:grid;gap:7px}
+.plan-items-list>div{display:flex;gap:6px;align-items:center}.plan-items-list>div>button:first-child{flex:1;text-align:left}
+#plan-editor .plan-palette-note,.professional-catalog .plan-palette-note{font-size:.69rem;line-height:1.6;color:#bfc9d8;margin-top:10px}
+#plan-editor .plan-advanced,#plan-editor .plan-records{background:#202833;color:#edf1f5;margin:10px 0;padding:0 10px;border:1px solid #465466;border-radius:10px}
+#plan-editor details>summary{padding:12px 0;font-size:.77rem;cursor:pointer}
+#plan-editor details[open]{padding-bottom:12px}
+#plan-editor .editor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#plan-editor #editor-warning{color:#f0c889}
+
+/* The detailed catalogue is visible only in professional mode. */
+.professional-catalog{min-width:0;background:#202833;border:1px solid #465466;border-radius:12px;padding:12px;color:#edf1f5;margin:12px 0}
+.professional-catalog h3{font-size:1rem;margin:0 0 12px;color:#fff}
+.catalog-filters{display:grid;gap:8px;margin-top:9px}
+.professional-catalog #professional-count{font-size:.71rem;color:#f0c889;margin:10px 0}
+.professional-results{display:grid;gap:8px;max-height:360px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.catalog-item{border:1px solid #465466;background:#17202a;border-radius:9px;padding:10px;min-width:0}
+.catalog-item strong{display:block;font-size:.8rem;line-height:1.35;overflow-wrap:anywhere}
+.catalog-item small{display:block;font-size:.64rem;color:#f0c889;margin:6px 0}
+.catalog-item p{font-size:.7rem;line-height:1.55;color:#c1cbd8;margin:7px 0}
+.catalog-item button{width:100%;margin-top:6px}
+@media(min-width:1200px){
+ .showroom-active .showroom-workspace.has-design-library{grid-template-columns:230px minmax(0,1fr) 320px}
+ .has-design-library>.professional-catalog{display:flex;flex-direction:column;min-height:0;height:100%;margin:0;overflow:hidden}
+ .has-design-library .professional-results{display:block;flex:1;min-height:0;max-height:none}
+ .has-design-library .catalog-item+.catalog-item{margin-top:8px}
+ .has-design-library .catalog-filters{grid-template-columns:1fr 1fr}
+ .has-design-library .professional-catalog input,.has-design-library .professional-catalog select{font-size:.74rem;padding:7px}
+}
+@media(max-width:600px){
+ #house-3d .model-transparency-toggle{top:8px;right:8px;min-height:40px;padding:8px;font-size:.7rem}
+ .showroom-active #professional-design-toggle{grid-column:1/-1}
+ .showroom-active.professional-mode #tour-start,.showroom-active.professional-mode #scene-wish{display:none}
+ .showroom-active .showroom-toolbar #design-request{min-height:40px;font-size:.72rem}
+ #plan-editor input:not([type=checkbox]),#plan-editor select,.professional-catalog input,.professional-catalog select{font-size:16px}
+ .plan-setup-grid{grid-template-columns:1fr 1fr 1fr}.plan-setup-grid>label:nth-child(2){grid-column:auto;grid-row:auto}
+ #plan-editor button,.professional-catalog button{min-height:44px}
+ .professional-results{max-height:300px}
+}
+#plan-editor .plan-setup>summary{font-weight:700;color:#f2c885;padding:0;list-style-position:inside}
+#plan-editor .plan-setup[open]>summary{margin-bottom:12px}
+#plan-editor .plan-room-selection>label+label{margin-top:10px}
+.showroom-active.professional-mode .dock-scenario{display:none}
+#plan-editor .library-shortcut{width:100%;margin-top:10px;color:#f0c889}
+/* Professional mode already enables the editable plan; avoid a second conflicting visibility toggle. */
+.showroom-active.professional-mode #plan-editor .editor-enable{display:none!important}

@@ -30,6 +30,26 @@
   let yaw = .40, elevation = .86, distance = 24, homeDistance = 24;
   const house = new T.Group(); scene.add(house);
   let planEditor = null;
+  let transparentView=false;
+  // Keep original materials untouched: furnishings often share them with walls/floors.
+  function createTransparency(){
+    const entries=new Map(),materials=new Map();let enabled=false;
+    function ghost(original,opacity){
+      let variants=materials.get(original);if(!variants){variants=new Map();materials.set(original,variants);}
+      if(!variants.has(opacity)){const clone=original.clone();clone.transparent=true;clone.opacity=Math.min(original.opacity,opacity);clone.depthWrite=false;variants.set(opacity,clone);}
+      return variants.get(opacity);
+    }
+    function apply(mesh,entry){
+      mesh.material=enabled?(Array.isArray(entry.material)?entry.material.map(m=>ghost(m,entry.opacity)):ghost(entry.material,entry.opacity)):entry.material;
+      mesh.castShadow=enabled?false:entry.castShadow;mesh.receiveShadow=enabled?false:entry.receiveShadow;
+    }
+    function add(object,opacity){object.traverse(mesh=>{if(!mesh.isMesh)return;let entry=entries.get(mesh);if(entry)entry.opacity=Math.min(entry.opacity,opacity);else{entry={material:mesh.material,castShadow:mesh.castShadow,receiveShadow:mesh.receiveShadow,opacity};entries.set(mesh,entry);}if(enabled)apply(mesh,entry);});}
+    function setEnabled(value){enabled=!!value;for(const [mesh,entry] of entries)apply(mesh,entry);if(enabled)refresh();}
+    function refresh(){if(!enabled)return;for(const [original,variants] of materials)for(const [opacity,clone] of variants){clone.color?.copy(original.color);clone.emissive?.copy(original.emissive);if('emissiveIntensity' in original)clone.emissiveIntensity=original.emissiveIntensity;clone.opacity=Math.min(original.opacity,opacity);}}
+    function clear(){setEnabled(false);entries.clear();for(const variants of materials.values())for(const clone of variants.values())clone.dispose();materials.clear();}
+    return {add,setEnabled,refresh,clear};
+  }
+  const structureView=createTransparency();
   const showroomMarkers=[];
   const walls = [], lamps = {}, curtains = {}, tvScreens = [];
   const fixtureMaterials = {};
@@ -69,7 +89,7 @@
   const brass = mat('#b29458', .35, .7), porcelain = mat('#eeebe4', .25);
   function box(x,y,z,w,h,d,m,parent=house) {
     const mesh = new T.Mesh(new T.BoxGeometry(w,h,d),m); mesh.position.set(x,y,z);
-    mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+    mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);if(m===plaster||m===trim)structureView.add(mesh,.12);return mesh;
   }
   function cylinder(x,y,z,rt,rb,h,m,segments=24) {
     const mesh=new T.Mesh(new T.CylinderGeometry(rt,rb,h,segments),m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;house.add(mesh);return mesh;
@@ -109,7 +129,7 @@
       if(height>2.12)piece(a,b,height-2.12,2.12+(height-2.12)/2);
       for(const p of [a,b])box(x+(axis==='x'?p:0),y+1.07,z+(axis==='z'?p:0),axis==='x'?.065:.22,2.14,axis==='z'?.065:.22,trim);
       box(x+(axis==='x'?at:0),y+2.14,z+(axis==='z'?at:0),axis==='x'?width+.12:.22,.08,axis==='z'?width+.12:.22,trim);
-      if(door){const hinge=new T.Group();hinge.position.set(x+(axis==='x'?a:0),y,z+(axis==='z'?a:0));hinge.rotation.y=(axis==='x'?0:-Math.PI/2)-Math.PI*.36;house.add(hinge);box(width/2,1.03,0,width,2.06,.055,oak,hinge);box(width-.13,1.0,.05,.10,.035,.055,brass,hinge);}
+      if(door){const hinge=new T.Group();hinge.position.set(x+(axis==='x'?a:0),y,z+(axis==='z'?a:0));hinge.rotation.y=(axis==='x'?0:-Math.PI/2)-Math.PI*.36;house.add(hinge);box(width/2,1.03,0,width,2.06,.055,oak,hinge);box(width-.13,1.0,.05,.10,.035,.055,brass,hinge);structureView.add(hinge,.12);}
       edge=b;
     }
     piece(edge,length/2,height,height/2);
@@ -132,6 +152,7 @@
   box(3.35,.7,3.7,.28,1.1,.65,porcelain);sphere(2.98,.46,3.7,.49,.25,.32,porcelain);
   sphere(2.92,.66,3.7,.32,.025,.21,mat('#b8b7b1'));box(2.48,1.0,4.31,.55,.16,.36,porcelain);
   // Rear windows and curtains (both have depth, mounted on rear wall).
+  const windowStart=house.children.length;
   const glass=mat('#789aa8',.22,.15);
   const curtainPleat=new T.BoxGeometry(.085,2.15,.09);
   for(const [name,cx,w] of [['salon',-3.2,3.9],['yatak',3.45,3.6]]){
@@ -144,6 +165,7 @@
       house.add(g);pair.push({g,side});
     } curtains[name]={pair,w};
   }
+  house.children.slice(windowStart).forEach(object=>structureView.add(object,.12));
   // Living room: upholstered sofa, arms, back cushions, rug, coffee table and TV.
   box(-3.25,.13,-1.7,4.2,.035,2.7,mat('#c8c1b1'));
   box(-4.9,.35,-2.4,1.25,.5,3.0,mat('#8c8275'));
@@ -393,6 +415,11 @@
       box(x,1.14,z-.1,.8,.5,.06,charcoal);box(x,.47,z+.7,.6,.15,.6,teal);box(x,.8,z+.95,.6,.65,.1,teal);
     }
   });
+  structureView.add(duplexUpper,.08);
+  const transparencyButton=document.createElement('button');transparencyButton.type='button';transparencyButton.id='view-transparent';transparencyButton.className='model-transparency-toggle';transparencyButton.textContent='◫ Şeffaf görünüm';transparencyButton.setAttribute('aria-pressed','false');transparencyButton.title='Duvarları ve üst katı saydamlaştırarak arkadaki odaları görün';host.append(transparencyButton);
+  const transparencyStatus=document.createElement('span');transparencyStatus.className='visually-hidden';transparencyStatus.setAttribute('role','status');host.append(transparencyStatus);
+  function setTransparent(value){transparentView=!!value;structureView.setEnabled(transparentView);planEditor?.setTransparent(transparentView);transparencyButton.setAttribute('aria-pressed',String(transparentView));transparencyButton.textContent=transparentView?'✓ Şeffaf görünüm':'◫ Şeffaf görünüm';transparencyStatus.textContent=transparentView?'Şeffaf görünüm açık. Duvarların ve üst katın arkasındaki odaları görebilirsiniz.':'Normal görünüm açık.';frame();}
+  transparencyButton.addEventListener('click',()=>setTransparent(!transparentView));
   const descriptions={
     '2+1 daire':'Kompakt daire: salon ve iki yatak odası. Ek odalar yatak odası ışık grubuna bağlıdır.',
     '3+1 daire':'Aile dairesi: salon ve üç yatak odası. Ek odalar yatak odası ışık grubuna bağlıdır.',
@@ -417,7 +444,7 @@
   }
   window.addEventListener('home-type-change',e=>changeHomeType(e.detail));
   const ground=new T.Mesh(new T.PlaneGeometry(200,200),new T.ShadowMaterial({opacity:.25}));ground.rotation.x=-Math.PI/2;ground.position.y=-.46;ground.receiveShadow=true;scene.add(ground);
-  if(window.createHomePlanEditor)planEditor=window.createHomePlanEditor({T,scene,house,camera,canvas:renderer.domElement,render:frame,fit:bounds=>{
+  if(window.createHomePlanEditor)planEditor=window.createHomePlanEditor({T,scene,house,camera,canvas:renderer.domElement,render:frame,createTransparency,fit:bounds=>{
     const size=bounds.getSize(new T.Vector3());bounds.getCenter(target);
     initialTarget.copy(target);
     const fov=camera.fov*Math.PI/180;
@@ -427,8 +454,9 @@
   function frame(){
     camera.position.set(target.x+distance*Math.sin(yaw)*Math.cos(elevation),target.y+distance*Math.sin(elevation),target.z+distance*Math.cos(yaw)*Math.cos(elevation));camera.lookAt(target);
     // View-dependent cutaway: walls facing the observer are removed, revealing interior volumes.
-    walls.forEach(w=>w.group.visible=w.nx*Math.sin(yaw)+w.nz*Math.cos(yaw)<.18);
+    walls.forEach(w=>w.group.visible=transparentView||w.nx*Math.sin(yaw)+w.nz*Math.cos(yaw)<.18);
     planEditor?.view(yaw);
+    structureView.refresh();
     renderer.render(scene,camera);
     const studio=isStudio();
     const labelsOn=house.visible&&host.clientWidth>=240;
@@ -544,18 +572,22 @@
   }
   // Etkin işaretçiler: bir parmak/fare döndürür, iki parmak yakınlaştırır.
   const pointers=new Map();
-  let drag=null, clickStart=null, moved=false, pinch=null;
+  let drag=null, clickStart=null, moved=false, pinch=null,planDragging=false;
   function pinchState(){const [a,b]=[...pointers.values()];return {distance:Math.hypot(a.x-b.x,a.y-b.y),clientX:(a.x+b.x)/2,clientY:(a.y+b.y)/2};}
   canvas.addEventListener('pointerdown',e=>{
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
     // Etkin olmayan bir işaretçi için yakalama hata fırlatır; hareket yine de işlenmeli.
     try{canvas.setPointerCapture(e.pointerId);}catch{}
-    if(pointers.size===1){drag={x:e.clientX,y:e.clientY};clickStart={...drag};moved=false;pinch=null;}
-    else if(pointers.size===2){pinch=pinchState();drag=null;clickStart=null;moved=true;}
+    if(pointers.size===1){
+      if(planEditor?.beginDrag(e)){planDragging=true;drag=null;clickStart=null;moved=true;pinch=null;return;}
+      drag={x:e.clientX,y:e.clientY};clickStart={...drag};moved=false;pinch=null;
+    }
+    else if(pointers.size===2){if(planDragging){planEditor?.endDrag(true);planDragging=false;}pinch=pinchState();drag=null;clickStart=null;moved=true;}
   });
   canvas.addEventListener('pointermove',e=>{
     if(!pointers.has(e.pointerId)){canvas.style.cursor=hitsPanel(e)?'pointer':'grab';return;}
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(planDragging){planEditor?.drag(e);return;}
     if(pinch&&pointers.size>=2){const next=pinchState();if(next.distance>0&&pinch.distance>0)zoom(pinch.distance/next.distance,next);pinch=next;return;}
     if(!drag)return;
     if(clickStart&&Math.hypot(e.clientX-clickStart.x,e.clientY-clickStart.y)>=5)moved=true;
@@ -564,6 +596,7 @@
   function releasePointer(e,isUp){
     if(!pointers.has(e.pointerId))return;
     pointers.delete(e.pointerId);
+    if(planDragging){planEditor?.endDrag(!isUp);planDragging=false;}
     if(isUp&&pointers.size===0&&clickStart&&!moved){if(hitsPanel(e))window.dispatchEvent(new CustomEvent('open-wall-panel'));else planEditor?.pick(e);}
     if(pointers.size<2)pinch=null;
     if(pointers.size===1){const p=[...pointers.values()][0];drag={x:p.x,y:p.y};clickStart=null;}

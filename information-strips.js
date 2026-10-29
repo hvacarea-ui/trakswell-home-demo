@@ -12,8 +12,8 @@
  const questions=[...document.querySelectorAll('#sss details, #teslim-deneyimi details')].map(d=>({title:d.querySelector('summary').textContent,description:d.querySelector('p').textContent}));
  const container=document.createElement('section');container.className='information-strips';container.setAttribute('aria-label','Akıllı ev hakkında bilgiler ve sorular');
  delivery.before(container);delivery.hidden=true;
- function strip(title,items,id){
-   const row=document.createElement('section');row.className='info-strip';row.setAttribute('aria-labelledby',id);
+ function strip(title,items,id,anchor){
+   const row=document.createElement('section');row.className='info-strip';row.id=anchor;row.setAttribute('aria-labelledby',id);
    const heading=document.createElement('div');heading.className='strip-heading';
    const h=document.createElement('h2');h.id=id;h.textContent=title;
    const controls=document.createElement('div');controls.className='strip-controls';
@@ -40,6 +40,7 @@
    reduced.addEventListener('change',()=>{if(reduced.matches){paused=true;state();}});
    window.addEventListener('resize',render);state();render();
  }
- strip('Evinizde neler değişir?',benefits,'benefit-strip-title');
- strip('Merak ettikleriniz',questions,'question-strip-title');
+ strip('Evinizde neler değişir?',benefits,'benefit-strip-title','evinizde-neler-degisir');
+ strip('Merak ettikleriniz',questions,'question-strip-title','sorular');
+ window.dispatchEvent(new Event('site-navigation-ready'));
 })();
