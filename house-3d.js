@@ -10,11 +10,11 @@
   let renderer;
   try { renderer = new T.WebGLRenderer({ antialias: true, alpha: true }); }
   catch { unavailable('Bu cihazda 3B görünüm açılamadı. Kumanda panelinden senaryoları deneyebilirsiniz.'); return; }
-  // Piksel oranı ekran yoğunluğunu izler: 1× ekranda 1, yüksek yoğunlukta en çok 2.
-  // Kenar yumuşatmayı MSAA (antialias:true) yapar; ek süper örnekleme yapılmaz.
-  const PIXEL_BUDGET=6000000;
-  function pixelRatioFor(w,h){const dpr=window.devicePixelRatio||1;return Math.max(1,Math.min(dpr,2,Math.sqrt(PIXEL_BUDGET/Math.max(1,w*h))));}
-  renderer.setPixelRatio(Math.max(1,Math.min(window.devicePixelRatio||1,2)));
+  // Keep native 1× clarity; limit only high-density buffer cost on smaller devices.
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),coarsePointer=matchMedia('(pointer: coarse)');
+  const lowCapability=(navigator.deviceMemory>0&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency>0&&navigator.hardwareConcurrency<=4);
+  function pixelRatioFor(w,h){const budget=lowCapability?3000000:coarsePointer.matches?4000000:6000000,dpr=window.devicePixelRatio||1;return Math.max(1,Math.min(dpr,lowCapability?1.5:2,Math.sqrt(budget/Math.max(1,w*h))));}
+  renderer.setPixelRatio(pixelRatioFor(1,1));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.outputColorSpace = T.SRGBColorSpace;
@@ -28,6 +28,7 @@
   const target = new T.Vector3(0, .2, .7);
   const initialTarget = target.clone();
   let yaw = .40, elevation = .86, distance = 24, homeDistance = 24;
+  let frameRequest=null,needsDraw=false,viewportVisible=true,contextLost=false,lastWidth=0,lastHeight=0,lastPixelRatio=0,labelMetricsDirty=true;
   const house = new T.Group(); scene.add(house);
   let planEditor = null;
   let transparentView=false;
@@ -314,14 +315,16 @@
   const robotLED=box(0,.36,-.19,.12,.018,.035,new T.MeshStandardMaterial({color:'#6fc8d2',emissive:'#6fc8d2',emissiveIntensity:1}));
   const robotParts=house.children.slice(robotStart),robot=new T.Group();robotParts.forEach(part=>robot.add(part));house.add(robot);robot.position.copy(robotDock);robot.name='smart-vacuum';
   const route=[[-3.8,-.3],[-1.3,-.3],[-1.3,-.85],[-3.8,-.85]].map(([x,z])=>new T.Vector3(x,0,z));
-  let robotMode='',robotRouteIndex=0,robotAnimation=null,robotTime=null;
+  let robotMode='',robotRouteIndex=0,robotAnimation=null,robotTime=null;const robotDelta=new T.Vector3();
+  function stopRobotAnimation(){if(robotAnimation!==null)window.cancelAnimationFrame(robotAnimation);robotAnimation=null;robotTime=null;}
+  function resumeRobotAnimation(){if(robotAnimation===null&&canDraw()&&house.visible&&!reducedMotion.matches&&(robotMode==='clean'||robotMode==='return'))robotAnimation=window.requestAnimationFrame(animateRobot);}
   function animateRobot(time){
     robotAnimation=null;
-    if(document.hidden||matchMedia('(prefers-reduced-motion: reduce)').matches){robotTime=null;return;}
+    if(!canDraw()||!house.visible||reducedMotion.matches){robotTime=null;return;}
     if(robotMode!=='clean'&&robotMode!=='return'){robotTime=null;return;}
     const dt=robotTime===null?0:Math.min((time-robotTime)/1000,.05);robotTime=time;
     const goal=robotMode==='clean'?route[robotRouteIndex]:robotDock;
-    const delta=goal.clone().sub(robot.position),length=delta.length();
+    const delta=robotDelta.copy(goal).sub(robot.position),length=delta.length();
     if(length<.03){
       if(robotMode==='clean')robotRouteIndex=(robotRouteIndex+1)%route.length;
       else{robot.position.copy(robotDock);robotMode='docked';robotTime=null;document.getElementById('robot-status').textContent='Robot şarj istasyonunda · Şarj oluyor (demo).';frame();return;}
@@ -332,11 +335,11 @@
     const command=document.querySelector('svg.house').getAttribute('data-robot')||'return';
     robot.visible=command!=='absent';chargingBase.visible=command!=='absent';
     robotLED.material.emissive.set(command==='paused'?'#ff6040':'#6fc8d2');
-    if(command===robotMode||(command==='return'&&robotMode==='docked'))return;
-    if(robotAnimation!==null){window.cancelAnimationFrame(robotAnimation);robotAnimation=null;}
+    if(command===robotMode||(command==='return'&&robotMode==='docked')){resumeRobotAnimation();return;}
+    stopRobotAnimation();
     robotMode=command;robotTime=null;
     if(command==='return'&&robot.position.distanceTo(robotDock)<.03){robotMode='docked';document.getElementById('robot-status').textContent='Robot şarj istasyonunda · Şarj oluyor (demo).';}
-    else if((command==='return'||command==='clean')&&window.requestAnimationFrame)robotAnimation=window.requestAnimationFrame(animateRobot);
+    else resumeRobotAnimation();
   }
   // Exterior entrance camera, aimed away from the door toward the visitor.
   box(.8,2.25,4.7,.14,.2,.3,charcoal);
@@ -451,34 +454,46 @@
     homeDistance=Math.max(size.x/Math.max(.3,camera.aspect),size.z,size.y*2)/(2*Math.tan(fov/2))*1.35;
     distance=Math.max(14,homeDistance);camera.far=Math.max(100,distance*3);camera.updateProjectionMatrix();frame();
   }});
-  function frame(){
+  function updateCamera(){
     camera.position.set(target.x+distance*Math.sin(yaw)*Math.cos(elevation),target.y+distance*Math.sin(elevation),target.z+distance*Math.cos(yaw)*Math.cos(elevation));camera.lookAt(target);
+  }
+  function canDraw(){return !document.hidden&&!contextLost&&viewportVisible;}
+  function frame(){
+    // Picking and cursor-centred zoom need the current camera before the next paint.
+    updateCamera();needsDraw=true;
+    if(frameRequest===null&&canDraw())frameRequest=window.requestAnimationFrame(drawFrame);
+  }
+  function drawFrame(){
+    frameRequest=null;if(!needsDraw||!canDraw())return;
+    const width=host.clientWidth,height=host.clientHeight;if(!width||!height)return;
+    needsDraw=false;updateCamera();
     // View-dependent cutaway: walls facing the observer are removed, revealing interior volumes.
     walls.forEach(w=>w.group.visible=transparentView||w.nx*Math.sin(yaw)+w.nz*Math.cos(yaw)<.18);
     planEditor?.view(yaw);
     structureView.refresh();
     renderer.render(scene,camera);
-    const studio=isStudio();
-    const labelsOn=house.visible&&host.clientWidth>=240;
+    const labelsOn=house.visible&&width>=240;
+    // Text is fixed. Measure all labels together only after a viewport/font change.
+    if(labelsOn&&labelMetricsDirty){for(const {node} of deviceLabels)node.hidden=false;for(const label of deviceLabels){label.width=label.node.offsetWidth;label.height=label.node.offsetHeight;}labelMetricsDirty=false;}
     // Çakışan etiketlerden listede sonra geleni gizlenir (öncelik: dizideki sıra). Model döndürülünce
     // ya da yakınlaştırılınca gizlenen etiket yeniden görünür.
     const placed=[];
-    for(const {node,anchor} of deviceLabels){
+    for(const {node,anchor,width:labelWidth,height:labelHeight} of deviceLabels){
       if(!labelsOn){node.hidden=true;continue;}
       const p=anchor.getWorldPosition(_labelPos).project(camera);
       if(p.z<-1||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1){node.hidden=true;continue;}
-      const x=(p.x+1)*host.clientWidth/2,y=(1-p.y)*host.clientHeight/2;
+      const x=(p.x+1)*width/2,y=(1-p.y)*height/2;
       node.style.left=x.toFixed(1)+'px';node.style.top=y.toFixed(1)+'px';node.hidden=false;
-      const w=node.offsetWidth,h=node.offsetHeight,box={l:x-w/2-3,r:x+w/2+3,t:y-h-3,b:y+3};
+      const box={l:x-labelWidth/2-3,r:x+labelWidth/2+3,t:y-labelHeight-3,b:y+3};
       if(placed.some(o=>box.l<o.r&&box.r>o.l&&box.t<o.b&&box.b>o.t))node.hidden=true;else placed.push(box);
     }
     positionTip();
     for(const {node,object} of showroomMarkers){
-      const p=object.getWorldPosition(new T.Vector3()).project(camera);
+      const p=object.getWorldPosition(_labelPos).project(camera);
       node.hidden=!house.visible||p.z < -1||p.z > 1||Math.abs(p.x)>1||Math.abs(p.y)>1;
-      const margin=Math.min(host.clientWidth/2,node.offsetWidth/2+8);
-      node.style.left=Math.max(margin,Math.min(host.clientWidth-margin,(p.x+1)*host.clientWidth/2))+'px';
-      node.style.top=Math.max(32,(1-p.y)*host.clientHeight/2)+'px';
+      const margin=Math.min(width/2,node.offsetWidth/2+8);
+      node.style.left=Math.max(margin,Math.min(width-margin,(p.x+1)*width/2))+'px';
+      node.style.top=Math.max(32,(1-p.y)*height/2)+'px';
     }
   }
   window.addEventListener('showroom-highlight',e=>{
@@ -521,13 +536,23 @@
     frame();
   }
   new MutationObserver(sync).observe(document.querySelector('svg.house'),{subtree:true,attributes:true,attributeFilter:['style','class','width','data-water','data-scene','data-audio','data-robot','data-visitor']});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&robotAnimation===null&&(robotMode==='clean'||robotMode==='return'))robotAnimation=window.requestAnimationFrame(animateRobot);});
+  function refreshVisibility(){
+    if(!canDraw()){if(frameRequest!==null)window.cancelAnimationFrame(frameRequest);frameRequest=null;stopRobotAnimation();return;}
+    frame();resumeRobotAnimation();
+  }
+  document.addEventListener('visibilitychange',refreshVisibility);
+  if('IntersectionObserver' in window)new IntersectionObserver(entries=>{viewportVisible=entries[0].isIntersecting;refreshVisibility();},{rootMargin:'80px',threshold:0}).observe(host);
+  reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches)stopRobotAnimation();else resumeRobotAnimation();});
+  window.addEventListener('plan-changed',()=>{if(house.visible)resumeRobotAnimation();else stopRobotAnimation();});
   function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;const oldScale=Math.max(1,1.05/camera.aspect);
     // Tarayıcı yakınlaştırması veya tam ekran değişince yoğunluk yeniden hesaplanır.
     const pixelRatio=pixelRatioFor(w,h);
-    renderer.setPixelRatio(pixelRatio);renderer.setSize(w,h,false);camera.aspect=w/h;const ratio=Math.max(1,1.05/camera.aspect)/oldScale;distance*=ratio;homeDistance*=ratio;camera.far=Math.max(100,distance*3);camera.updateProjectionMatrix();frame();}
+    if(w===lastWidth&&h===lastHeight&&pixelRatio===lastPixelRatio)return;
+    if(pixelRatio!==lastPixelRatio)renderer.setPixelRatio(pixelRatio);renderer.setSize(w,h,false);lastWidth=w;lastHeight=h;lastPixelRatio=pixelRatio;labelMetricsDirty=true;camera.aspect=w/h;const ratio=Math.max(1,1.05/camera.aspect)/oldScale;distance*=ratio;homeDistance*=ratio;camera.far=Math.max(100,distance*3);camera.updateProjectionMatrix();frame();}
   new ResizeObserver(resize).observe(host);
   window.addEventListener('resize',resize);
+  coarsePointer.addEventListener('change',resize);
+  document.fonts?.ready.then(()=>{labelMetricsDirty=true;frame();});
   const canvas=renderer.domElement;
   const zoomRay=new T.Raycaster();
   function zoom(factor,event){
@@ -609,7 +634,8 @@
   document.getElementById('view-zoom').addEventListener('click',()=>zoom(.75));
   document.getElementById('view-zoom-out').addEventListener('click',()=>zoom(1/.75));
   document.getElementById('view-reset').addEventListener('click',()=>{yaw=.4;elevation=.86;distance=homeDistance;target.copy(initialTarget);frame();});
-  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();status.textContent='3B görüntü bağlantısı kesildi. Sayfayı yenileyin; kumanda paneli kullanılabilir.';});
+  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;refreshVisibility();status.textContent='3B görüntü bağlantısı kesildi. Kumanda paneli kullanılabilir; görüntü geri geldiğinde yenilenir.';});
+  canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;labelMetricsDirty=true;status.textContent='3B görünüm yeniden hazır.';refreshVisibility();});
   status.textContent='Fare tekerleği: imlecin olduğu yere yaklaş / uzaklaş · Sürükle: döndür · İlk görünüm: sıfırla';
   changeHomeType(document.getElementById('model-type').value);resize();sync();
 })();

@@ -408,7 +408,7 @@ $('f').addEventListener('submit',e=>{
   $('send-whatsapp').hidden=!CONTACT.whatsapp;$('send-email').hidden=!CONTACT.email;
   if(CONTACT.whatsapp)$('send-whatsapp').href='https://wa.me/'+CONTACT.whatsapp+'?text='+encodeURIComponent(message);
   if(CONTACT.email)$('send-email').href='mailto:'+CONTACT.email+'?subject='+encodeURIComponent('Akıllı ev teklif talebi')+'&body='+encodeURIComponent(message);
-  ok.textContent=CONTACT.whatsapp||CONTACT.email?'Talebiniz hazır; henüz gönderilmedi. Özeti kontrol edip bir gönderim kanalı seçin.':'Talebiniz hazır; henüz gönderilmedi. İşletme iletişim bilgileri eklenene kadar metni kopyalayabilirsiniz.';
+  ok.textContent='Özetiniz hazır; henüz gönderilmedi. Aşağıdan talebinizi gönderin veya tasarımınızı kaydedin.';
 });
 $('copy-request').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText($('request-text').value);$('ok').textContent='Talep metni kopyalandı. Henüz gönderilmedi.';}

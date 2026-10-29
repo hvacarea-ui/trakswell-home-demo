@@ -185,7 +185,7 @@ header .youtube-channel-link:hover{background:#ffffff0d;border-color:#ff0033}
 header .youtube-channel-link:focus-visible{outline:2px solid var(--lamp);outline-offset:3px}
 @media(max-width:520px){header .nav{gap:8px}}
 @media(max-width:440px){header .nav{gap:6px}header .brand-wordmark strong{font-size:14px}}
-@media(max-width:380px){header .brand-wordmark{display:none}}
+@media(max-width:380px){header .brand .brand-wordmark{display:none}}
 
 /* Homepage: a spacious house view and three rotating phone notifications. */
 .home-preview{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px;align-items:center;min-width:0}
@@ -319,3 +319,49 @@ header .btn[data-section-link][aria-current="location"]{color:#251b0d;text-decor
 #plan-editor .library-shortcut{width:100%;margin-top:10px;color:#f0c889}
 /* Professional mode already enables the editable plan; avoid a second conflicting visibility toggle. */
 .showroom-active.professional-mode #plan-editor .editor-enable{display:none!important}
+
+/* Shared server submission flow; legacy local save controls are retired. */
+.portal-consent{display:flex!important;align-items:flex-start;gap:10px;width:100%;font-size:13px}.portal-consent input{width:auto!important;min-height:0;margin-top:4px}#portal-status{width:100%}#plan-load,#plan-forget,#saved-plan-picker{display:none!important}
+
+/* The helper is one focused panel, shared by ordinary and professional plans. */
+#design-assistant-toggle{display:none}
+.showroom-active #design-assistant-toggle{display:block;border-color:#c2985d}
+.showroom-active #design-assistant-toggle[aria-expanded=true]{background:#eab668;color:#251b0d}
+.showroom-active.assistant-open #tour-start,.showroom-active.assistant-open #scene-wish{display:none}
+#plan-editor .design-assistant{padding:14px;margin:0 0 14px;background:#172531;border:1px solid #9b7a4a;border-radius:12px;color:#edf1f5}
+.assistant-heading{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px}
+#plan-editor .assistant-heading h3{font-size:1rem;line-height:1.35;color:#f5cf95;margin:0}
+#plan-editor .assistant-heading button{flex:none;min-width:32px;min-height:32px;padding:2px 8px;margin-left:auto;background:transparent;font-size:20px}
+#plan-editor .design-assistant>p{font-size:.76rem;line-height:1.6;margin:0 0 12px}
+#plan-editor .design-assistant textarea{display:block;width:100%;min-height:112px;resize:vertical;max-height:220px;border:1px solid #687a8c;border-radius:9px;margin:6px 0 8px;padding:10px;background:#111b24;color:#f3f4f5;font:400 .82rem/1.6 var(--body)}
+.assistant-examples{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+#plan-editor .assistant-examples button{font-size:.66rem;min-height:34px;padding:6px;background:#253747}
+#plan-editor .assistant-primary{display:block;width:100%;min-height:44px;background:#eab668;color:#251b0d;border-color:#eab668;margin-top:12px}
+#plan-editor .assistant-status{color:#f4ce94;font-size:.78rem;margin:12px 0 0}
+.assistant-status:empty{display:none}
+.assistant-preview{margin-top:12px;border-top:1px solid #50606e;padding-top:12px}
+.assistant-preview h4{font-size:.85rem;margin:0 0 8px;color:#f2e9da}
+.assistant-preview ul{padding-left:18px;margin:8px 0;font-size:.74rem;line-height:1.65;color:#d7e1ec;max-height:240px;overflow:auto}
+.assistant-preview li+li{margin-top:6px}
+.assistant-warnings{padding:10px;border:1px solid #9a7951;border-radius:9px;background:#342c22;margin-top:10px}
+.assistant-warnings strong{font-size:.75rem;color:#ffd296}.assistant-warnings ul{color:#f1d8b5;max-height:150px}
+#plan-editor #assistant-undo{width:100%;margin-top:10px}
+#plan-editor .design-assistant .assistant-note{font-size:.66rem;color:#aebdcd;margin-top:12px;margin-bottom:0}
+.showroom-active.assistant-open .dock-scenario{display:none}
+@media(max-width:600px){
+ .showroom-active #design-assistant-toggle,.showroom-active #professional-design-toggle{grid-column:auto;min-width:0;font-size:.7rem}
+ #plan-editor .design-assistant textarea{font-size:16px}
+ #plan-editor .assistant-examples button{min-height:40px}
+}
+
+/* Poster is local and small; the full YouTube player loads only on request. */
+.promo-video-shell{position:relative;aspect-ratio:16/9;background:#14191e;border-radius:16px;overflow:hidden;margin-top:24px}
+.promo-video-shell>img{display:block;width:100%;height:100%;object-fit:cover}
+#promo-video-play{position:absolute;inset:0;width:100%;border:0;background:linear-gradient(transparent 55%,#000a);color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--body)}
+#promo-video-play>span{display:grid;place-items:center;width:84px;height:60px;background:#f03;color:#fff;font-size:30px;border-radius:16px;box-shadow:0 6px 24px #0007}
+#promo-video-play strong{margin-top:12px;background:#10181ee8;border-radius:8px;padding:8px 14px;font-size:1rem}
+#promo-video-play small{position:absolute;bottom:14px;left:16px;background:#10181ee8;border-radius:6px;padding:4px 8px;font-size:.7rem}
+#promo-video-play:focus-visible{outline:3px solid #eab668;outline-offset:-6px}
+@media(max-width:600px){#promo-video-play>span{width:64px;height:46px;font-size:24px;border-radius:12px}#promo-video-play strong{font-size:.8rem;padding:6px 10px}#promo-video-play small{font-size:.56rem;bottom:7px;left:7px}}
+/* Existing local drafts remain accessible in the static preview. */
+body:not(.portal-connected) #plan-load,body:not(.portal-connected) #plan-forget,body:not(.portal-connected) #saved-plan-picker{display:revert!important}
