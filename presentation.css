@@ -179,3 +179,10 @@ header .brand-wordmark small{display:block;font:600 10px/1 var(--body);letter-sp
 @media(max-width:760px){header .brand{gap:9px}header .brand-logo{width:54px;height:54px}header .brand-wordmark strong{font-size:17px}}
 @media(max-width:440px){header .brand{gap:8px}header .brand-logo{width:48px;height:48px}header .brand-wordmark strong{font-size:15px}header .brand-wordmark small{font-size:9px}}
 @media(max-width:350px){header .brand-logo{width:44px;height:44px}header .brand-wordmark strong{font-size:13px}header .brand-wordmark small{font-size:8px}}
+header .youtube-channel-link{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border:1px solid var(--night-line);border-radius:12px;transition:background-color .15s,border-color .15s}
+header .youtube-channel-link svg{display:block}
+header .youtube-channel-link:hover{background:#ffffff0d;border-color:#ff0033}
+header .youtube-channel-link:focus-visible{outline:2px solid var(--lamp);outline-offset:3px}
+@media(max-width:520px){header .nav{gap:8px}}
+@media(max-width:440px){header .nav{gap:6px}header .brand-wordmark strong{font-size:14px}}
+@media(max-width:380px){header .brand-wordmark{display:none}}
