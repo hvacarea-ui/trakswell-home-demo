@@ -170,9 +170,12 @@ main>details.site-information{max-width:none;width:min(var(--page-max),calc(100%
 
 .promo-video{padding-block:48px;background:#f4f1ea}.promo-video h2{font-size:clamp(1.7rem,3vw,2.6rem);margin:12px 0}.promo-video video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#14191e;border-radius:16px;margin-top:24px}.promo-video-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin:16px 0;font-size:.9rem}.promo-video-links a{color:#79501a}.promo-video details{margin-top:18px}.promo-video details p{max-width:80ch}.promo-video summary{min-height:44px;cursor:pointer}
 
-/* Approved circuit-house identity: intrinsic ratio reserves space before loading. */
-header .brand{flex:none}
-header .brand-logo{display:block;width:210px;height:auto;max-width:100%;object-fit:contain}
-@media(max-width:760px){header .brand-logo{width:174px}}
-@media(max-width:440px){header .brand-logo{width:150px}}
-@media(max-width:350px){header .brand-logo{width:132px}}
+/* Use the same circular identity as the YouTube channel; keep the name readable at nav size. */
+header .brand{flex:none;gap:12px}
+header .brand-logo{display:block;width:64px;height:64px;flex:none;aspect-ratio:1;object-fit:cover;border-radius:50%}
+header .brand-wordmark{display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1}
+header .brand-wordmark strong{font:800 20px/1 var(--display);letter-spacing:.02em;color:var(--night-ink)}
+header .brand-wordmark small{display:block;font:600 10px/1 var(--body);letter-spacing:.4em;padding-left:.4em;color:var(--lamp)}
+@media(max-width:760px){header .brand{gap:9px}header .brand-logo{width:54px;height:54px}header .brand-wordmark strong{font-size:17px}}
+@media(max-width:440px){header .brand{gap:8px}header .brand-logo{width:48px;height:48px}header .brand-wordmark strong{font-size:15px}header .brand-wordmark small{font-size:9px}}
+@media(max-width:350px){header .brand-logo{width:44px;height:44px}header .brand-wordmark strong{font-size:13px}header .brand-wordmark small{font-size:8px}}
