@@ -14,7 +14,32 @@
  // Consent is part of the prepared summary, not a change to the customer's design/form.
  for(const type of ['input','change'])$('portal-consent').addEventListener(type,event=>event.stopPropagation());
  function capture(kind){const plan=window.TrakswellExperience?.getPlan()||(window.TrakswellPlan?.isEnabled()?window.TrakswellPlan.getExport():null);return {kind,contact:{name:$('ad').value.trim(),phone:$('tel').value.trim(),email:$('eposta').disabled?'':$('eposta').value.trim(),location:$('ilce').value.trim()},homeType:plan?.homeType||$('konut').value,systems:[...document.querySelectorAll('input[name="sy"]:checked')].map(x=>x.value),preference:document.querySelector('input[name="zm"]:checked').value,notes:$('not').value.trim(),summary:[window.TrakswellPreferences?.summary(),window.TrakswellExperience?.summary()].filter(Boolean).join('\n'),consent:$('portal-consent').checked,plan};}
- async function send(kind){if(busy)return;const data=capture(kind),status=$('portal-status');if(!data.consent){status.textContent='Göndermeden önce veri kullanımı onayını işaretleyin.';return}if(kind==='design'&&!data.plan){status.textContent='Önce ev tasarımınızı hazırlayıp form adımına geçin.';return}const serialized=JSON.stringify({...data,plan:data.plan?{...data.plan,createdAt:undefined}:null});if(completed===serialized){status.textContent='Bu kayıt zaten sunucuya iletildi.';return}if(previous!==serialized){previous=serialized;requestKey=crypto.randomUUID()}busy=true;controls.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='Kaydediliyor…';const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);try{const response=await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':requestKey},body:serialized,signal:controller.signal});let value;try{value=await response.json()}catch{throw Error('Sunucunun kayıt yanıtı doğrulanamadı. Tasarımınız açık sayfada korunuyor; aynı talebi yeniden deneyebilirsiniz.')}if(!response.ok)throw Error(value.error||'Kayıt tamamlanamadı. Tekrar deneyebilirsiniz.');if(typeof value.id!=='string'||!/^[a-zA-Z0-9-]{1,100}$/.test(value.id))throw Error('Kayıt numarası doğrulanamadı. Aynı talebi yeniden deneyebilirsiniz.');completed=serialized;status.textContent=(kind==='design'?'Tasarımınız kaydedildi.':'Talebiniz ve varsa ev tasarımınız alındı.')+' Kayıt no: '+value.id;$('ok').textContent=status.textContent;if(data.plan&&$('project-selection'))$('project-selection').textContent='Ev planınız sunucuya kaydedildi. Kayıt no: '+value.id;}catch(error){status.textContent=controller.signal.aborted?'Sunucudan zamanında yanıt alınamadı. Kayıt durumunu doğrulamak için yeniden deneyin; aynı talep iki kez kaydedilmez. Tasarımınız açık sayfada korunuyor.':error.message}finally{clearTimeout(timer);busy=false;controls.querySelectorAll('button').forEach(b=>b.disabled=false)}}
+ function serialize(data){return JSON.stringify({...data,plan:data.plan?{...data.plan,createdAt:undefined}:null});}
+ async function send(kind){
+  if(busy)return;
+  const data=capture(kind),status=$('portal-status');
+  if(!data.consent){status.textContent='Göndermeden önce veri kullanımı onayını işaretleyin.';return}
+  if(kind==='design'&&!data.plan){status.textContent='Önce ev tasarımınızı hazırlayıp form adımına geçin.';return}
+  const serialized=serialize(data);
+  if(completed===serialized){status.textContent='Bu kayıt zaten sunucuya iletildi.';return}
+  if(previous!==serialized){previous=serialized;requestKey=crypto.randomUUID()}
+  busy=true;controls.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='Kaydediliyor…';
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+  try{
+   const response=await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':requestKey},body:serialized,signal:controller.signal});
+   let value;
+   try{value=await response.json()}catch{throw Error('Sunucunun kayıt yanıtı doğrulanamadı. Tasarımınız açık sayfada korunuyor; aynı talebi yeniden deneyebilirsiniz.')}
+   if(!response.ok)throw Error(value?.error||'Kayıt tamamlanamadı. Tekrar deneyebilirsiniz.');
+   if(typeof value?.id!=='string'||!/^[a-zA-Z0-9-]{1,100}$/.test(value.id))throw Error('Kayıt numarası doğrulanamadı. Aynı talebi yeniden deneyebilirsiniz.');
+   completed=serialized;
+   const changed=serialize(capture(kind))!==serialized;
+   status.textContent=(changed?'Önceki gönderiminiz alındı. Son değişiklikler henüz gönderilmedi; özeti yeniden hazırlayın.':kind==='design'?'Tasarımınız kaydedildi.':'Talebiniz ve varsa ev tasarımınız alındı.')+' Kayıt no: '+value.id;
+   $('ok').textContent=status.textContent;
+   if(!changed&&data.plan&&$('project-selection'))$('project-selection').textContent='Ev planınız sunucuya kaydedildi. Kayıt no: '+value.id;
+  }catch(error){
+   status.textContent=controller.signal.aborted?'Sunucudan zamanında yanıt alınamadı. Kayıt durumunu doğrulamak için yeniden deneyin; aynı talep iki kez kaydedilmez. Tasarımınız açık sayfada korunuyor.':error.message;
+  }finally{clearTimeout(timer);busy=false;controls.querySelectorAll('button').forEach(b=>b.disabled=false)}
+ }
  $('portal-send').onclick=()=>send('inquiry');$('portal-save-design').onclick=()=>send('design');
  $('f').addEventListener('submit',()=>{if(!$('f').querySelector('[aria-invalid="true"]')){$('portal-status').textContent='Özeti kontrol edin. Gönder veya tasarımı kaydet düğmesiyle işlemi tamamlayın.';$('portal-save-design').hidden=!capture('design').plan;}});
 })();
