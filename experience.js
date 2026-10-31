@@ -99,7 +99,7 @@
  const invitation=document.createElement('div');invitation.className='studio-invitation';
  invitation.innerHTML='<strong>Evinizi tasarlamak için tam ekrana geçin.</strong><p>Odaları düzenleyin, kumandayı kullanın ve senaryoları deneyin. Hazır olduğunuzda planınızı kaydedip teklif isteyin.</p>';
  toolbar.before(invitation);
- document.querySelector('.hero .lead').textContent='Evinizin neler yapabileceğini keşfedin. Kendi planınızı ve senaryolarınızı tam ekran tasarım alanında hazırlayın.';
+ document.querySelector('.hero .lead').textContent='Ankara merkezli akıllı ev projelendirme ve kurulum: aydınlatma, perde, iklimlendirme ve güvenlik sensörlerini evinize uygun senaryolarla bir araya getiriyoruz. 3B demoda seçenekleri deneyin, kendi planınızı hazırlayın.';
  // A single control group at a time keeps the house visible and the remote legible.
  const remote=document.querySelector('.remote-console');
  const remoteNav=document.createElement('div');remoteNav.className='simple-remote-nav';remoteNav.setAttribute('role','tablist');remoteNav.setAttribute('aria-label','Neyi değiştirmek istersiniz?');
