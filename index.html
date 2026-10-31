@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="site.css">
 <link rel="stylesheet" href="presentation.css?v=20261031-files">
 <link rel="stylesheet" href="brand.css?v=20261029-assistant">
+<link rel="stylesheet" href="video-privacy.css?v=20261031">
 </head>
 <body>
 <a class="skip-link" href="#top">İçeriğe geç</a>
@@ -270,7 +271,8 @@
       <div class="what"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 8h16M9 8v13M15 8v13"/></svg><h3>Perde ve panjur</h3><p>Motorlu perde ve panjurlar güneşe, saate ya da senaryoya göre açılır, kapanır.</p><span class="ex">Perde motoru · panjur modülü</span></div>
       <div class="what"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><h3>Güvenlik ve sensörler</h3><p>Kapı-pencere, hareket, su baskını ve duman sensörleri. Uygun bağlantı ve bildirim izinleriyle olaylar telefonunuza iletilebilir.</p><span class="ex">Kapı · hareket · su · duman</span></div>
       <div class="what"><svg viewBox="0 0 24 24"><path d="M9 3v4M15 3v4M7 7h10v4a5 5 0 0 1-10 0V7ZM12 16v5"/></svg><h3>Priz ve enerji</h3><p>Akıllı prizlerle cihazları uzaktan kapatır, tüketimi watt cinsinden izlersiniz. Uygun yük kapasitesi ve doğrulanmış kapatma geri bildirimiyle açık unutulan cihazları yönetmeye yardımcı olur.</p><span class="ex">Enerji ölçümlü priz</span></div>
-      <div class="what"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><h3>Uygulama ve uzaktan erişim</h3><p>Tüm ev tek uygulamada, odalara ayrılmış halde. Aile bireylerine ayrı kullanıcı; uygun internet bağlantısı ve yetkilerle uzaktan erişim.</p><span class="ex">Telefon · tablet · duvar butonu</span></div></div><p id="ozel-panel">Telefon, tablet ve duvar panelindeki kontrol düzeni evinize ve uyumlu cihazlarınıza göre planlanır. Özel ekran tasarımının kapsamı teklifte belirtilir.</p><div class="svc">
+      <div class="what"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><h3>Uygulama ve uzaktan erişim</h3><p>Tüm ev tek uygulamada, odalara ayrılmış halde. Aile bireylerine ayrı kullanıcı; uygun internet bağlantısı ve yetkilerle uzaktan erişim.</p><span class="ex">Telefon · tablet · duvar butonu</span></div>
+</div><p id="ozel-panel">Telefon, tablet ve duvar panelindeki kontrol düzeni evinize ve uyumlu cihazlarınıza göre planlanır. Özel ekran tasarımının kapsamı teklifte belirtilir.</p><div class="svc">
       <ul class="svc-list"><li><b>İhtiyaç ve keşif</b><span>Oda planı, tesisat ve cihaz uyumluluğunu birlikte değerlendiririz.</span></li><li><b>Kurulum ve ayarlar</b><span>Ağ, montaj ve günlük senaryoları belirlenen kapsamda hazırlarız.</span></li><li><b>Teslim ve kullanım</b><span>Sistemi birlikte deneriz; eğitim ve destek koşullarını netleştiririz.</span></li></ul>
       <aside class="svc-side">
         <p class="eyebrow">Teklif için</p>
@@ -400,7 +402,7 @@
       <div class="ok" id="ok" role="status" aria-live="polite" hidden></div>
       <div class="full" id="request-result" hidden>
         <label for="request-text">Talep özeti</label>
-        <textarea class="request-preview" id="request-text" readonly></textarea>
+        <p>Gönderimden önce <a href="privacy.html" target="_blank" rel="noopener noreferrer">aydınlatma ve veri kullanımı açıklamasını</a> inceleyin. Kampanya izni alınmaz.</p><textarea class="request-preview" id="request-text" readonly></textarea>
         <div class="send-actions">
           <button class="btn btn-ghost" type="button" id="download-request-plan" hidden>Plan dosyasını indir</button><button class="btn btn-ghost" type="button" id="copy-request">Metni kopyala</button>
           <a class="btn btn-lamp" id="send-whatsapp" target="_blank" rel="noopener noreferrer" hidden>WhatsApp ile aç</a>
@@ -413,7 +415,7 @@
 </section>
 <section id="veri-bilgisi" class="privacy-section"><div class="wrap"><p class="eyebrow">VERİLERİNİZ</p><h2>Kontrol sizde kalır.</h2><p>Formun ilk adımı bir özet hazırlar. Gönderme veya tasarım kaydetme işlemini onayladığınızda iletişim bilgileriniz, seçtiğiniz sistemler, notlarınız ve varsa oda ölçüleri ile nesne yerleşimleri Trakswell Home sunucusuna iletilir. Bu kayıtlara yalnızca yetkili yönetim panelinden erişilir. Sunucu bağlantısı yoksa gönderim gerçekleşmez ve hata bilgisi gösterilir. Tasarım düzenlenirken açık sayfanın belleğinde tutulur; sayfayı kapatmadan önce sunucuya kaydedin veya JSON dosyasını indirin.</p><p>Kamera, mikrofon ve konum izinleri istenmez. Günaydın seslendirmesi cihazınızın konuşma hizmetini kullanır; bazı sesler internet bağlantısı gerektirebilir. Kamera kayıtları temsilidir ve sayfa kapandığında silinir.</p><p>Tanıtım videosu YouTube’un gizlilik etkin oynatıcısıyla sunulur. Videoyu başlattığınızda YouTube oynatıcısı yüklenir ve YouTube’a bağlantı kurulur; IP adresiniz ve cihaz bilgileriniz bu hizmet tarafından işlenebilir.</p><p>Formun gönderim durumu ilgili adımda açıkça belirtilir. Gönderim yapılmadan talebiniz bize ulaşmış sayılmaz.</p></div></section></main>
 
-<footer><div class="wrap"><span>© 2026 Trakswell Home · <a href="akilli-ev-rehberi.html">Akıllı ev rehberi</a> · <a href="#veri-bilgisi">Veri kullanımı</a></span><span>Trakswell Home · Akıllı yaşam tasarımı</span></div></footer>
+<footer><div class="wrap"><span>© 2026 Trakswell Home · <a href="akilli-ev-rehberi.html">Akıllı ev rehberi</a> · <a href="privacy.html">Aydınlatma ve veri kullanımı</a> · <a href="privacy.html#cerezler">Çerezler ve hizmetler</a> · <button type="button" id="video-privacy-reset">Video tercihini sıfırla</button></span><span>Trakswell Home · Akıllı yaşam tasarımı</span></div></footer>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"HomeAndConstructionBusiness","@id":"https://hvacarea-ui.github.io/trakswell-home-demo/#business","name":"Trakswell Home","url":"https://hvacarea-ui.github.io/trakswell-home-demo/","logo":"https://hvacarea-ui.github.io/trakswell-home-demo/trakswell-youtube-logo.png","description":"Ankara merkezli akıllı ev projelendirme ve kurulum. Aydınlatma, perde, iklimlendirme ve güvenlik sensörleri için eve özel otomasyon senaryoları.","address":{"@type":"PostalAddress","addressLocality":"Ankara","addressCountry":"TR"},"areaServed":{"@type":"Country","name":"Türkiye"},"sameAs":["https://www.youtube.com/@TrakswellHome"]},{"@type":"WebSite","@id":"https://hvacarea-ui.github.io/trakswell-home-demo/#website","url":"https://hvacarea-ui.github.io/trakswell-home-demo/","name":"Trakswell Home","inLanguage":"tr-TR","publisher":{"@id":"https://hvacarea-ui.github.io/trakswell-home-demo/#business"}},{"@type":"WebPage","@id":"https://hvacarea-ui.github.io/trakswell-home-demo/#webpage","url":"https://hvacarea-ui.github.io/trakswell-home-demo/","name":"Akıllı Ev Sistemleri ve Ankara Kurulum | Trakswell Home","inLanguage":"tr-TR","isPartOf":{"@id":"https://hvacarea-ui.github.io/trakswell-home-demo/#website"},"about":{"@id":"https://hvacarea-ui.github.io/trakswell-home-demo/#business"}}]}</script>
 
 
@@ -431,7 +433,7 @@
 <script src="design-workspace.js?v=20261029-design"></script>
 <script src="design-assistant-engine.js?v=20261031-fixes"></script>
 <script src="design-assistant.js?v=20261029-assistant"></script>
-<script src="video-loader.js?v=20261029-assistant"></script>
-<script src="public-runtime.js"></script><script src="customer-portal.js?v=20261031-retry"></script>
+<script src="video-loader.js?v=20261031-privacy"></script>
+<script src="public-runtime.js"></script><script src="customer-portal.js?v=20261031-privacy-final"></script>
 </body>
 </html>
