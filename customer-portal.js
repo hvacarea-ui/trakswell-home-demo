@@ -49,5 +49,5 @@
   }finally{clearTimeout(timer);busy=false;controls.querySelectorAll('button').forEach(b=>b.disabled=false)}
  }
  $('portal-send').onclick=()=>send('inquiry');$('portal-save-design').onclick=()=>send('design');
- $('f').addEventListener('submit',()=>{if(!$('f').querySelector('[aria-invalid="true"]')){$('portal-status').textContent=privacy?'Özeti ve aydınlatmayı kontrol edin. Gönder veya tasarımı kaydet düğmesiyle işlemi tamamlayın.':'Gönderim kapalı. Özetinizi kopyalayabilir veya planı cihazınıza indirebilirsiniz.';$('portal-save-design').hidden=!capture('design').plan;}});
+ $('f').addEventListener('submit',()=>{if(!$('f').querySelector('[aria-invalid="true"]')){$('portal-status').textContent=privacy?'Özeti ve aydınlatmayı kontrol edin. Gönder veya tasarımı kaydet düğmesiyle işlemi tamamlayın.':'Gönderim kapalı. Özetinizi kopyalayabilir veya planı cihazınıza indirebilirsiniz.';if(!privacy)$('ok').textContent='Özetiniz hazır; gönderim kapalı olduğu için bilgileriniz bize iletilmedi. Özeti kopyalayabilir veya planı cihazınıza indirebilirsiniz.';$('portal-save-design').hidden=!capture('design').plan;}});
 })();

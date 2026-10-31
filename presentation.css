@@ -368,3 +368,17 @@ body:not(.portal-connected) #plan-load,body:not(.portal-connected) #plan-forget,
 
 /* File operations remain reachable before enabling the editable model. */
 #plan-editor .plan-file-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}#plan-editor .plan-file-actions button{min-width:0;min-height:44px;white-space:normal;overflow-wrap:anywhere}#plan-editor .plan-legacy-records{margin-top:12px;border-top:1px solid #465466}body.portal-connected .plan-legacy-records{display:none}@media(max-width:480px){#plan-editor .plan-file-actions{grid-template-columns:1fr}}
+
+/* On phones, give the house and the tools a usable full-height pane. */
+.mobile-studio-views{display:none}
+@media(max-width:600px){
+ .showroom-active .fullscreen-scenes{display:none}
+ .showroom-active .mobile-studio-views{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:none}
+ .mobile-studio-views button{min-height:44px;border:1px solid #555d68;border-radius:8px;background:#242830;color:#edf0f5;font:600 14px/1.3 system-ui;cursor:pointer}
+ .mobile-studio-views button[aria-pressed=true]{background:#eab668;color:#251b0d}
+ .showroom-active .showroom-workspace{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+ .showroom-active:not(.mobile-controls-open) #advanced-controls{display:none!important}
+ .showroom-active.mobile-controls-open .showroom-stage{display:none!important}
+ .showroom-active .control-dock{min-height:0}
+ .showroom-active .dock-panel{min-height:0!important;flex:1;overflow-y:auto}
+}
