@@ -623,7 +623,9 @@
     pointers.delete(e.pointerId);
     if(planDragging){planEditor?.endDrag(!isUp);planDragging=false;}
     if(isUp&&pointers.size===0&&clickStart&&!moved){if(hitsPanel(e))window.dispatchEvent(new CustomEvent('open-wall-panel'));else planEditor?.pick(e);}
-    if(pointers.size<2)pinch=null;
+    // Rebase when the active pair changes (e.g. three fingers become two).
+    // Keeping the previous pair's distance causes a sudden zoom on the next move.
+    pinch=pointers.size>=2?pinchState():null;
     if(pointers.size===1){const p=[...pointers.values()][0];drag={x:p.x,y:p.y};clickStart=null;}
     if(pointers.size===0){drag=null;clickStart=null;}
   }
