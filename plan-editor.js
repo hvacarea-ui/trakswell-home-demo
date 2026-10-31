@@ -63,7 +63,8 @@ window.createHomePlanEditor = function({T,scene,house,camera,canvas,render,fit,c
   function currentItem(){return currentRoom()?.items.find(item=>item.id===selectedItem);}
   function snapshot(){return {type,rooms:clone(rooms),settings:clone(settings),selected,selectedItem,floorFilter};}
   function record(state=snapshot()){history.push(state);if(history.length>30)history.shift();}
-  function notify(){window.dispatchEvent(new CustomEvent('plan-changed'));}
+  let planRevision=0,importSequence=0;
+  function notify(){planRevision++;window.dispatchEvent(new CustomEvent('plan-changed'));}
   function refreshSettings(){settings.balcony=rooms.some(outdoor);settings.floors=Math.max(...rooms.map(room=>room.floor))+1;}
   function itemSize(room,item){const spec=catalog.get(item.type),size=dimensions[spec?.primitiveType]||dimensions.generic,width=size[item.rotation%2?1:0],depth=size[item.rotation%2?0:1],scale=Math.min(1,(room.width-.2)/width,(room.depth-.2)/depth);return {width:width*scale,depth:depth*scale,scale};}
   function containItem(room,item){const size=itemSize(room,item);item.x=clamp(item.x,-Math.max(0,(room.width-size.width)/2-.05),Math.max(0,(room.width-size.width)/2-.05));item.z=clamp(item.z,-Math.max(0,(room.depth-size.depth)/2-.05),Math.max(0,(room.depth-size.depth)/2-.05));}
@@ -202,7 +203,7 @@ window.createHomePlanEditor = function({T,scene,house,camera,canvas,render,fit,c
   function setEnabled(){cancelDrag();root.visible=$('edit-enabled').checked;house.visible=!root.visible;$('editor-fields').hidden=!root.visible;if(root.visible){if(!rooms.length){const initial=defaults(type||$('model-type').value);rooms=initial.rooms;settings=initial.settings;type=initial.type;selected=rooms[0].id;}rebuild();fitPlan();if(professional)refreshCatalog();}else{cache[type]=snapshot();const wasApplying=applying;applying=true;try{window.dispatchEvent(new CustomEvent('home-type-change',{detail:type}));}finally{applying=wasApplying;}}notify();render();}
   function updateType(value){registerType(value);if($('model-type').value!==value){applying=true;try{$('model-type').value=value;$('model-type').dispatchEvent(new Event('change',{bubbles:true}));}finally{applying=false;}}type=value;}
   function restore(state){cancelDrag();updateType(state.type);rooms=clone(state.rooms);settings=clone(state.settings);selected=state.selected||rooms[0].id;selectedItem=state.selectedItem||'';floorFilter=state.floorFilter||'all';setupFields();rebuild();if(root.visible)fitPlan();}
-  function changeType(value){if(applying)return;cancelDrag();if(type&&rooms.length)cache[type]=snapshot();const next=cache[value]||readStored(value)||defaults(value);type=value;rooms=clone(next.rooms);settings=clone(next.settings);selected=next.selected||rooms[0].id;selectedItem='';floorFilter='all';history=[];setupFields();if(root.visible){rebuild();fitPlan();}}
+  function changeType(value){if(applying)return;planRevision++;cancelDrag();if(type&&rooms.length)cache[type]=snapshot();const next=cache[value]||readStored(value)||defaults(value);type=value;rooms=clone(next.rooms);settings=clone(next.settings);selected=next.selected||rooms[0].id;selectedItem='';floorFilter='all';history=[];setupFields();if(root.visible){rebuild();fitPlan();}}
   function setMode(value){cancelDrag();mode=value==='place'&&professional?'place':'orbit';$('plan-place-mode').setAttribute('aria-pressed',String(mode==='place'));$('plan-orbit-mode').setAttribute('aria-pressed',String(mode==='orbit'));$('plan-drag-help').textContent=!professional?'Odaları ve eşyaları yerleştirmek için Profesyonel tasarım’ı açın.':mode==='place'?'Odanın zeminini tutup taşıyın. Bir nesneyi tutup odanın içinde yerleştirin. Boş alanda sürükleyerek evi döndürebilirsiniz. İki parmakla yakınlaşın.':'Modeli sürükleyerek evi döndürün. Yerleştirmek için “Yerleştir”i seçin.';editor.dataset.mode=mode;}
   function setProfessional(value){const next=Boolean(value);if(next===professional)return;cancelDrag();if(next)professionalRestore={enabled:root.visible,mode,state:snapshot(),history:clone(history)};else professionalDraft={state:snapshot(),history:clone(history)};professional=next;editor.querySelectorAll('.professional-only').forEach(node=>node.hidden=!next);$('professional-catalog').hidden=!next;editor.dataset.professional=String(next);if(next){if(professionalDraft){history=clone(professionalDraft.history);restore(professionalDraft.state);}$('edit-enabled').checked=true;setEnabled();setMode('place');refreshCatalog();}else{history=clone(professionalRestore?.history||[]);if(professionalRestore?.state.rooms.length)restore(professionalRestore.state);setMode(professionalRestore?.mode||'orbit');$('edit-enabled').checked=professionalRestore?.enabled||false;setEnabled();professionalRestore=null;}}
   function sync(){const wet=(document.querySelector('svg.house').getAttribute('data-water')||'').split(',');for(const {kind,bulbMaterial,light,puddle} of lights){const control=({hol:'antre',merdiven:'antre',wc:'banyo',balkon:'salon',teras:'salon'})[kind]||kind;puddle.visible=['banyo','mutfak'].includes(kind)&&wet.includes(kind);const value=Number(document.querySelector('#r-'+control+' .glow')?.style.opacity||0);bulbMaterial.emissiveIntensity=value*3.5;light.intensity=value*28;}visibility.refresh();}
@@ -345,7 +346,25 @@ window.createHomePlanEditor = function({T,scene,house,camera,canvas,render,fit,c
   for(const room of [...new Set(inventory.map(item=>item.room).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr')))option($('professional-room-filter'),room,room);
   $('plan-save').addEventListener('click',()=>window.dispatchEvent(new CustomEvent('save-design-request')));$('plan-load').addEventListener('click',()=>load());$('plan-download').addEventListener('click',()=>download());
   $('plan-forget').addEventListener('click',()=>{let removed=0;try{for(const key of Object.keys(localStorage))if(/^trakswell-plan-v[12]:/.test(key)){localStorage.removeItem(key);removed++;}}catch{$('editor-warning').textContent='Tarayıcı kayıt alanına erişilemedi.';return;}refreshSaved();$('editor-status').textContent=removed?'Bu tarayıcıdaki '+removed+' kayıt kaldırıldı. Açık tasarımınız korunuyor.':'Bu tarayıcıda kayıt yok.';});
-  $('plan-import').addEventListener('click',()=>$('plan-file').click());$('plan-file').addEventListener('change',async()=>{const file=$('plan-file').files[0];if(!file)return;try{if(file.size>500000)throw Error('En fazla 500 KB büyüklüğünde bir plan seçin.');const data=parsePlan(JSON.parse(await file.text()));cancelDrag();record({...snapshot(),restoreEnabled:root.visible});restore(data);$('edit-enabled').checked=true;setEnabled();$('editor-status').textContent='Plan dosyası açıldı. Odalar ve seçili nesneler yüklendi.';}catch(error){$('editor-warning').textContent=error instanceof SyntaxError?'Dosya açılamadı. Geçerli bir Trakswell JSON planı seçin.':error.message||'Plan dosyası açılamadı.';}finally{$('plan-file').value='';}});
+  $('plan-import').addEventListener('click',()=>$('plan-file').click());
+  $('plan-file').addEventListener('change',async()=>{
+    const file=$('plan-file').files[0];if(!file)return;
+    const request=++importSequence,revision=planRevision;
+    $('editor-warning').textContent='';
+    $('editor-status').textContent='Plan dosyası okunuyor...';
+    try{
+      if(file.size>500000)throw Error('En fazla 500 KB büyüklüğünde bir plan seçin.');
+      const text=await file.text();
+      if(request!==importSequence)return;
+      if(revision!==planRevision||gesture)throw Error('Dosya okunurken tasarımınız değişti. Son değişiklikleriniz korundu; dosyayı açmak için yeniden seçin.');
+      const data=parsePlan(JSON.parse(text));cancelDrag();record({...snapshot(),restoreEnabled:root.visible});restore(data);$('edit-enabled').checked=true;setEnabled();
+      $('editor-status').textContent='Plan dosyası açıldı. Odalar ve seçili nesneler yüklendi.';
+    }catch(error){
+      if(request!==importSequence)return;
+      $('editor-status').textContent='';
+      $('editor-warning').textContent=error instanceof SyntaxError?'Dosya açılamadı. Geçerli bir Trakswell JSON planı seçin.':error.message||'Plan dosyası açılamadı.';
+    }finally{if(request===importSequence)$('plan-file').value='';}
+  });
   canvas.addEventListener('keydown',event=>{if(!professional||!root.visible||mode!=='place')return;const move={ArrowLeft:[-.5,0],ArrowRight:[.5,0],ArrowUp:[0,-.5],ArrowDown:[0,.5]}[event.key];if(move){event.preventDefault();moveSelection(...move);}if(event.key==='Escape')cancelDrag();});
   fillPalette();refreshSaved();setMode('orbit');
   const api={changeType,sync,pick,view,setTransparent,setProfessional,beginDrag,drag,endDrag,cancelDrag,isEnabled:()=>root.visible,getExport,getState,describe,download,save,load,previewAssistance,applyAssistance,undo,undoAssistance,canUndoAssistance};
