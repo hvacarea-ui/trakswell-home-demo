@@ -365,3 +365,6 @@ header .btn[data-section-link][aria-current="location"]{color:#251b0d;text-decor
 @media(max-width:600px){#promo-video-play>span{width:64px;height:46px;font-size:24px;border-radius:12px}#promo-video-play strong{font-size:.8rem;padding:6px 10px}#promo-video-play small{font-size:.56rem;bottom:7px;left:7px}}
 /* Existing local drafts remain accessible in the static preview. */
 body:not(.portal-connected) #plan-load,body:not(.portal-connected) #plan-forget,body:not(.portal-connected) #saved-plan-picker{display:revert!important}
+
+/* File operations remain reachable before enabling the editable model. */
+#plan-editor .plan-file-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}#plan-editor .plan-file-actions button{min-width:0;min-height:44px;white-space:normal;overflow-wrap:anywhere}#plan-editor .plan-legacy-records{margin-top:12px;border-top:1px solid #465466}body.portal-connected .plan-legacy-records{display:none}@media(max-width:480px){#plan-editor .plan-file-actions{grid-template-columns:1fr}}
