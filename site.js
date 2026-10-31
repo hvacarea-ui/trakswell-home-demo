@@ -402,7 +402,7 @@ $('f').addEventListener('submit',e=>{
     lines.push('','Müşterinin hazırladığı ev planı:',...describeRequestPlan(requestPlan),
       'Tam ölçüler ve oda içi yerleşimler plan dosyasındadır. Plan dosyası ayrıca indirilebilir.');
   }
-  $('download-request-plan').hidden=!requestPlan;$('plan-email-note').hidden=!requestPlan;
+  $('download-request-plan').hidden=!requestPlan;$('plan-email-note').hidden=!requestPlan||!CONTACT.email;
   const message=lines.join('\n');
   $('request-text').value=message;$('request-result').hidden=false;
   $('send-whatsapp').hidden=!CONTACT.whatsapp;$('send-email').hidden=!CONTACT.email;
@@ -500,6 +500,9 @@ $('copy-request').addEventListener('click',async()=>{
 (()=>{
  const preferences={comfort:{title:'Günlük konfor',systems:['sy1','sy2','sy3'],detail:'Aydınlatma, perde ve iklimlendirmeyi günlük düzeninize göre değerlendirelim.'},cinema:{title:'Film ve atmosfer',systems:['sy1','sy3'],detail:'Salonunuz için loş ışık ve perde senaryosuyla başlayalım.'},awareness:{title:'Evden haberdar olma',systems:['sy4','sy5','sy6'],detail:'Kapı, priz ve sensör ihtiyaçlarını birlikte netleştirelim.'}};
  const chosen=new Set(),buttons=[...document.querySelectorAll('[data-need]')];
+ const systemInputs=[...document.querySelectorAll('input[name=sy]')],initialSystems=new Set(systemInputs.filter(input=>input.checked).map(input=>input.id)),systemOverrides=new Map();
+ // Priority cards suggest systems; a direct checkbox choice always takes precedence.
+ systemInputs.forEach(input=>input.addEventListener('change',()=>systemOverrides.set(input.id,input.checked)));
  const summary=()=>[...chosen].map(key=>preferences[key].title).join(' + ');
  window.TrakswellPreferences={summary};
  buttons.forEach(button=>button.addEventListener('click',()=>{
@@ -507,7 +510,7 @@ $('copy-request').addEventListener('click',async()=>{
    if(chosen.has(key))chosen.delete(key);else chosen.add(key);
    button.setAttribute('aria-pressed',String(chosen.has(key)));button.querySelector('span').textContent=chosen.has(key)?'✓':'＋';
    const systems=new Set([...chosen].flatMap(key=>preferences[key].systems));
-   document.querySelectorAll('input[name=sy]').forEach(input=>input.checked=systems.has(input.id));
+   systemInputs.forEach(input=>input.checked=systemOverrides.has(input.id)?systemOverrides.get(input.id):initialSystems.has(input.id)||systems.has(input.id));
    $('needs-title').textContent=chosen.size?'Sizin başlangıcınız: '+summary():'Önce size iyi gelecek yerden başlayın.';
    $('needs-summary').textContent=chosen.size?[...chosen].map(key=>preferences[key].detail).join(' '):'Bir veya birkaç öncelik seçebilirsiniz. Seçiminiz teklif taslağına aktarılır.';
    $('needs-continue').textContent='Seçimlerimle devam et →';

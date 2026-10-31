@@ -29,6 +29,10 @@
   const noChangePattern = /\b(?:ekleme|eklemeyin|eklemeyiniz|eklenmesin|koyma|koymayin|konmasin|yerlestirme|yerlestirmeyin|yerlestirilmesin|takma|takmayin|takilmasin|kaldirma|kaldirmayin|silme|silmeyin|cikarma|cikarmayin|sokme|sokmeyin|degistirme|degistirmeyin|koru|koruyun|dokunma|dokunmayin)\b|\bayni kalsin\b/g;
   const removePattern = /\b(?:kaldir(?:in)?|cikar(?:in)?|sil(?:in)?|sok(?:un)?|istemiyorum|istemiyoruz|olmasin|olmamali)\b|\biptal et\b/g;
   const addPattern = /\b(?:ekle(?:yin)?|istiyorum|istiyoruz|olsun|koy(?:un)?|yerlestir(?:in)?|tak(?:in)?)\b|\bilave et\b/g;
+  const additionProcessPattern = /\b(?:eklenmesini|eklemeyi|eklemek|konmasini|koyulmasini|koymayi|koymak|yerlestirilmesini|yerlestirmeyi|yerlestirmek|takilmasini|takmayi|takmak|ilave edilmesini)\b/;
+  const noAdditionPattern = new RegExp(additionProcessPattern.source + '\\s+(?:(?:de|da|hic|asla|kesinlikle|pek|artik|simdi|su anda)\\s+)*(?:istemiyorum|istemiyoruz)\\b', 'g');
+  const unsupportedQuantityPattern = /\b(?:daha|fazladan|ekstra|birer|ikiser|ucer|dorder|beser|altisar|yediser|sekizer|dokuzar|onar|yirmiser|otuzar|yuzer|biner)\b|\b\d+['’]?(?:er|ser|ar|sar)\b/;
+  const structuralValuePattern = /\b(?:\d{1,2}\s*\+\s*\d{1,2}|\d+(?:[.,]\d+)?\s*(?:m2|metrekare)|(?:tek|bir|iki|uc|\d+)\s+kat(?:li|a)?|dubleks|tripleks|balkonlu|balkonsuz)\b/g;
   const unsupportedActionPattern = /\b(?:ac|acin|acilsin|acma|acmayin|kapat[a-z]*|calistir[a-z]*|kilitle[a-z]*|aktiflestir[a-z]*|ayarla[a-z]*|boya[a-z]*|buyut[a-z]*|kucult[a-z]*|tasi|tasiyin|tasinsin|dondur[a-z]*|degistir[a-z]*)\b|\b(?:rengini|boyutunu|yerini|sicakligini)\b/;
   const unclearPolarityPattern = /\b(?:kaldir[a-z]*|cikar[a-z]*|sil[a-z]*|sok[a-z]*|istem[a-z]*|olma[a-z]*|ekleme[a-z]*|koyma[a-z]*|takma[a-z]*|yerlestirme[a-z]*)\b/;
   const unsupportedRoomPattern = /\b(?:garaj(?:a|da|daki)|bahce(?:ye|de|deki)|ofis(?:e|te|teki)|kiler(?:e|de|deki)|depo(?:ya|da|daki)|(?:cocuk|ebeveyn|misafir|calisma) oda[a-z]*)\b/;
@@ -46,6 +50,9 @@
   function overlaps(a, b) { return a.start < b.end && b.start < a.end; }
   function matches(pattern, text) { return [...text.matchAll(new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g'))]; }
   function span(match, extra = {}) { return { start: match.index, end: match.index + match[0].length, ...extra }; }
+  function negatedStructureFollowing(value) {
+    return /^\s*(?:ve\s+)*(?:bir\s+)?(?:(?:ev|plan|duzen|olsun)\s*)?(?:istem[a-z]*|olma[a-z]*|kaldir[a-z]*|sil[a-z]*|cikar[a-z]*|degistirme[a-z]*|ekleme[a-z]*|yapma[a-z]*|hazirlama[a-z]*|olusturma[a-z]*)\b/.test(value.replace(structuralValuePattern, ' '));
+  }
   function sourceRoomKind(item) {
     const room = normalize(item.room || '');
     if (/^salon|^yemek/.test(room)) return 'salon';
@@ -139,10 +146,22 @@
     const excerpt = value => original.slice(value.start, value.end).trim();
     const initialClauses = clauses(text);
     const clauseFor = value => initialClauses.find(part => value.start >= part.start && value.start < part.end) || { start: 0, end: text.length };
+    const structureFollowing = (value, clause) => {
+      let following = text.slice(value.end, clause.end), index = initialClauses.indexOf(clause);
+      // Commas can join a measurement list governed by one trailing negation.
+      // An explicit positive verb or sentence boundary closes that list.
+      while (index >= 0 && index + 1 < initialClauses.length && !following.replace(structuralValuePattern, ' ').replace(/\b(?:ve|bir|ev|plan|duzen)\b/g, ' ').trim()) {
+        const current = initialClauses[index], next = initialClauses[index + 1];
+        if (!/^\s*,\s*$/.test(text.slice(current.end, next.start))) break;
+        following += ' ' + text.slice(next.start, next.end); index++;
+      }
+      return following;
+    };
     const structural = (match, values, label) => {
       const value = span(match), clause = clauseFor(value), sentence = text.slice(clause.start, clause.end);
-      const following = text.slice(value.end, clause.end);
-      const negated = /^\s*(?:bir\s+)?(?:ev|plan|duzen|olsun)?\s*(?:istem[a-z]*|olma[a-z]*|kaldir[a-z]*|sil[a-z]*|cikar[a-z]*|degistirme[a-z]*|ekleme[a-z]*)\b/.test(following);
+      // A final negation can govern several adjacent measurements, such as
+      // “3+1 150 m2 ev istemiyorum”. Do not retain only the earlier measurement.
+      const negated = negatedStructureFollowing(structureFollowing(value, clause));
       consume(value);
       if (invalidContext.test(sentence) || questionPattern.test(sentence) || negated || /\ben (?:az|fazla)\b|\b(?:minimum|maksimum|altinda|ustunde|arasinda)\b/.test(sentence)) {
         warn('Ölçü/kat isteği belirsiz olduğu için değiştirilmedi: “' + excerpt(clause) + '”.');
@@ -160,7 +179,8 @@
     ];
     for (const [amount, regex] of balconyRules) for (const match of text.matchAll(regex)) {
       const value = span(match), clause = clauseFor(value); consume(value);
-      if (invalidContext.test(text.slice(clause.start, clause.end)) || questionPattern.test(text.slice(clause.start, clause.end)) || /^\s*(?:bir\s+)?(?:ev|plan)?\s*(?:istem[a-z]*|olma[a-z]*)\b/.test(text.slice(value.end, clause.end))) { settingsEvidence.push({ key: 'balcony', invalid: true }); warn('Balkon isteği belirsiz olduğu için değiştirilmedi: “' + excerpt(clause) + '”.'); }
+      const following = /^balkon(?:lu|suz)$/.test(match[0]) ? structureFollowing(value, clause) : text.slice(value.end, clause.end);
+      if (invalidContext.test(text.slice(clause.start, clause.end)) || questionPattern.test(text.slice(clause.start, clause.end)) || negatedStructureFollowing(following)) { settingsEvidence.push({ key: 'balcony', invalid: true }); warn('Balkon isteği belirsiz olduğu için değiştirilmedi: “' + excerpt(clause) + '”.'); }
       else settingsEvidence.push({ key: 'balcony', amount, label: amount ? 'Balkon eklensin' : 'Balkon kaldırılsın' });
     }
     for (const match of text.matchAll(/\bbalkon(?:u)?\s+(?:ekleme(?:yin)?|kaldirma(?:yin)?|silme(?:yin)?|cikarma(?:yin)?)\b/g)) { consume(span(match)); result.recognized.push('Balkon değiştirilmeyecek.'); }
@@ -201,10 +221,12 @@
       const content = text.slice(part.start, part.end), localMatches = chosen.filter(value => value.start >= part.start && value.end <= part.end);
       const roomMatches = localMatches.filter(value => value.kind === 'room'), entries = localMatches.filter(value => value.kind !== 'room');
       roomMatches.forEach(consume);
+      const noAddition = matches(noAdditionPattern, content).map(match => ({ ...span(match), action: 'none' }));
       const actions = [
+        ...noAddition,
         ...matches(noChangePattern, content).map(match => ({ ...span(match), action: 'none' })),
-        ...matches(removePattern, content).map(match => ({ ...span(match), action: 'remove' })),
-        ...matches(addPattern, content).map(match => ({ ...span(match), action: 'add' }))
+        ...matches(removePattern, content).map(match => ({ ...span(match), action: 'remove' })).filter(value => !noAddition.some(other => overlaps(value, other))),
+        ...matches(addPattern, content).map(match => ({ ...span(match), action: 'add' })).filter(value => !noAddition.some(other => overlaps(value, other)))
       ].map(value => ({ ...value, start: value.start + part.start, end: value.end + part.start })).filter(value => !consumed.some(used => overlaps(value, used))).sort((a, b) => a.start - b.start);
       actions.forEach(consume);
       if (!entries.length) {
@@ -232,6 +254,13 @@
         if (action === 'none') { result.recognized.push('“' + excerpt(entry) + '” için değişiklik yapılmayacak.'); continue; }
         if (action === 'ambiguous') { warn('Ekleme/kaldırma yönü belirsiz: “' + excerpt(entry) + '”.'); continue; }
         const actionWindow = text.slice(previousEnd, nextStart);
+        const leading = text.slice(previousEnd, entry.start), trailing = text.slice(entry.end, nextStart);
+        const precedingJoin = [...leading.matchAll(/\bve\b/g)].pop(), followingJoin = /\bve\b/.exec(trailing);
+        const previousAction = actions.filter(value => value.start >= previousEnd && value.end <= entry.start).pop();
+        const entryStart = Math.max(previousEnd, precedingJoin ? previousEnd + precedingJoin.index + precedingJoin[0].length : previousEnd, previousAction?.end || previousEnd);
+        const entryEnd = followingJoin ? entry.end + followingJoin.index : nextStart;
+        const entryActionWindow = text.slice(entryStart, entryEnd);
+        if (action === 'remove' && additionProcessPattern.test(entryActionWindow)) { warn('Ekleme işlemiyle ilgili olumsuz ifade mevcut nesneleri kaldırmaz; bu nesne değiştirilmedi: “' + excerpt(entry) + '”.'); continue; }
         if (unsupportedActionPattern.test(actionWindow) || /\b(?:devre disi|devreden|pasiflestir|durdur|duraklat|sustur)\b/.test(actionWindow) || (colorPattern.test(actionWindow) && !actions.some(value => value.action === 'add' || value.action === 'remove'))) { warn('Canlı cihaz kontrolü, renk, boyut veya taşıma komutu desteklenmiyor: “' + excerpt(part) + '”.'); continue; }
         if (unsupportedRoomPattern.test(actionWindow)) { warn('Bu oda hedefi otomatik seçilemiyor: “' + excerpt(part) + '”. Önce odayı seçip “seçili odaya” yazın.'); continue; }
         const unknownActionText = actionWindow.split('');
@@ -244,6 +273,7 @@
           result.recognized.push(entry.preset.name + ' hedefi için örnek cihaz önerileri hazırlandı; uygulamadan önce listeyi kontrol edin.');
           continue;
         }
+        if (unsupportedQuantityPattern.test(entryActionWindow)) { warn('“Daha/fazladan” veya “ikişer” gibi eklemeli/dağıtmalı adetler otomatik uygulanamaz. Oda başına ulaşılacak toplam adedi yazın: “' + excerpt(part) + '”.'); continue; }
         let options = entry.options;
         const base = options.filter(option => option.builtin);
         if (base.length) options = base;
