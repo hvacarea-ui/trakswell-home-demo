@@ -5,7 +5,7 @@
  const benefits=sections.filter(d=>!d.querySelector('#sss')).map(d=>{
    const section=d.querySelector('section');
    const description=section.querySelector('p.lead')||[...section.querySelectorAll('p')].find(p=>!p.classList.contains('eyebrow'));
-   return {title:d.querySelector('summary').textContent,description:description?.textContent||'Projenize uygun seçenekleri ayrıntılarda inceleyin.',href:'#'+section.id};
+   return {title:d.querySelector('summary').textContent,description:description?.textContent||'Projenize uygun seçenekleri ayrıntılarda inceleyin.',href:section.id?'#'+section.id:null};
  });
  const delivery=document.getElementById('teslim-deneyimi');
  delivery.querySelectorAll('article').forEach(a=>benefits.push({title:a.querySelector('h3').textContent,description:a.querySelector('p').textContent}));
