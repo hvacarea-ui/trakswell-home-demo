@@ -10,11 +10,11 @@
  Object.entries(scenes).forEach(([key,data])=>{const b=document.createElement('button');b.type='button';b.textContent=data.title;b.dataset.fullScene=key;b.addEventListener('click',()=>choose(key));fullControls.append(b);});toolbar.after(fullControls);
  const guidePanel=document.createElement('div');guidePanel.id='tour-panel';guidePanel.className='tour-panel';guidePanel.hidden=true;guidePanel.innerHTML='<div><span id="tour-count"></span><h3 id="tour-title"></h3><p id="tour-description" role="status"></p></div><div class="tour-actions"><button type="button" id="tour-back">← Önceki</button><button type="button" id="tour-next">Sonraki →</button><button type="button" id="tour-exit">Turu bırak</button></div>';
  host.after(guidePanel);
- const shortlist=document.createElement('div');shortlist.className='scene-shortlist';shortlist.innerHTML='<div><h3>Evimde istediklerim <span id="wish-count">0</span></h3><p>Beğendiğiniz senaryoları ekleyin. Bu liste teklif taslağınıza taşınır; sipariş oluşturmaz.</p></div><ul id="wish-list"></ul><p id="wish-empty">Henüz senaryo seçmediniz. Evi deneyip beğendiğiniz senaryoyu yukarıdaki kalp düğmesiyle ekleyin.</p><a href="#teklif" id="wish-quote">Bu seçimlerle teklif taslağımı hazırla →</a>';
+ const shortlist=document.createElement('div');shortlist.className='scene-shortlist';shortlist.innerHTML='<div><h3>Evimde istediklerim <span id="wish-count">0</span></h3><p>Beğendiğiniz senaryoları ekleyin. Bu liste teklif taslağınıza taşınır; sipariş oluşturmaz.</p></div><ul id="wish-list"></ul><p id="wish-empty">Henüz senaryo seçmediniz. Evi deneyip beğendiğiniz senaryoyu yukarıdaki kalp düğmesiyle ekleyin.</p><a href="#teklif" id="wish-quote">Seçimlerimle devam et →</a>';
  viewer.append(shortlist);
  const workspace=document.createElement('div');workspace.className='showroom-workspace';const stage=document.createElement('div');stage.className='showroom-stage';
  host.before(workspace);stage.append(host,guidePanel,viewer.querySelector('.view-tools'),$('view-status'));workspace.append(stage,$('advanced-controls'));
- const saveButton=document.createElement('button');saveButton.type='button';saveButton.id='design-request';saveButton.textContent='Tasarımımı kaydet ve teklif iste →';toolbar.append(saveButton);
+ const saveButton=document.createElement('button');saveButton.type='button';saveButton.id='design-request';saveButton.textContent='Tasarımı tamamla →';toolbar.append(saveButton);
  const professionalButton=document.createElement('button');professionalButton.type='button';professionalButton.id='professional-design-toggle';professionalButton.textContent='Profesyonel tasarım';professionalButton.setAttribute('aria-pressed','false');professionalButton.setAttribute('aria-controls','plan-editor');saveButton.before(professionalButton);
  professionalButton.disabled=!window.TrakswellPlan;
  function setProfessionalDesign(active){
@@ -66,7 +66,7 @@
  new MutationObserver(()=>{if(!$('chips').querySelector('[aria-pressed="true"]')){current='';stopTour();renderWish();}}).observe($('chips'),{subtree:true,attributes:true,attributeFilter:['aria-pressed']});
  $('showroom-fullscreen').addEventListener('click',()=>viewer.classList.contains('showroom-active')?closeStudio():openStudio());
  document.addEventListener('fullscreenchange',()=>setStudio(document.fullscreenElement===viewer));
- document.querySelectorAll('[data-scope]').forEach(b=>b.addEventListener('click',()=>{scope=scope===b.dataset.scope?'':b.dataset.scope;document.querySelectorAll('[data-scope]').forEach(x=>{const active=x.dataset.scope===scope;x.setAttribute('aria-pressed',String(active));x.textContent=active?'✓ Başlangıç kapsamım':'Bu kapsamı değerlendirelim';});$('scope-status').textContent=scope?'Seçilen başlangıç: '+scope+'. Teklif taslağına eklenecek.':'Bir başlangıç kapsamı seçebilirsiniz. Kesin içerik keşifle belirlenir.';invalidate();}));
+ document.querySelectorAll('[data-scope]').forEach(b=>b.addEventListener('click',()=>{scope=scope===b.dataset.scope?'':b.dataset.scope;document.querySelectorAll('[data-scope]').forEach(x=>{const active=x.dataset.scope===scope;x.setAttribute('aria-pressed',String(active));x.textContent=active?'✓ Başlangıç kapsamım':'Planıma ekle';});$('scope-status').textContent=scope?'Seçilen başlangıç: '+scope+'. Teklif taslağına eklenecek.':'Bir başlangıç kapsamı seçebilirsiniz. Kesin içerik keşifle belirlenir.';invalidate();}));
  window.TrakswellExperience={getPlan:()=>savedPlan?JSON.parse(JSON.stringify(savedPlan)):null,isPlanPresentationChange,isRestoringPlan:()=>handingOff||switchingProfessional,summary:()=>{const lines=[];if(favorites.size){lines.push('Beğendiğim senaryolar: '+[...favorites].map(k=>scenes[k].title).join(', '));lines.push('Değerlendirilecek altyapı: '+[...new Set([...favorites].map(k=>scenes[k].systems))].join('; '));}if(scope)lines.push('Örnek başlangıç kapsamı: '+scope);return lines.join('\n');}};
  // Read about the service first; make all project choices together above the form.
  const needsSection=document.querySelector('.needs-section');
@@ -85,7 +85,7 @@
    if(priorities)entries.push('Öncelikleriniz: '+priorities);
    if(scope)entries.push('Başlangıç kapsamınız: '+scope);
    if(favorites.size)entries.push('Beğendiğiniz senaryolar: '+[...favorites].map(k=>scenes[k].title).join(', '));
-   if(savedPlan)entries.push(...describeRequestPlan(savedPlan).map((line,index)=>(index===0?'Kaydedilen ev planınız: ':'')+line));
+   if(savedPlan)entries.push(...describeRequestPlan(savedPlan).map((line,index)=>(index===0?'Hazırlanan ev planınız: ':'')+line));
    if(!entries.length)entries.push('Henüz seçim yapmadınız. Yukarıdan seçim yapabilir veya ihtiyacınızı aşağıdaki not alanına yazabilirsiniz.');
    for(const entry of entries){const li=document.createElement('li');li.textContent=entry;list.append(li);}
  }
@@ -97,7 +97,7 @@
  $('dock-panel-remote').append(document.querySelector('.experience-controls'),shortlist);
  const disclaimer=document.querySelector('.demo-disclaimer');if(disclaimer)viewer.append(disclaimer);
  const invitation=document.createElement('div');invitation.className='studio-invitation';
- invitation.innerHTML='<strong>Evinizi tasarlamak için tam ekrana geçin.</strong><p>Odaları düzenleyin, kumandayı kullanın ve senaryoları deneyin. Hazır olduğunuzda planınızı kaydedip teklif isteyin.</p>';
+ invitation.innerHTML='<strong>Evinizi tasarlamak için tam ekrana geçin.</strong><p>Odaları düzenleyin, kumandayı kullanın ve senaryoları deneyin. Hazır olduğunuzda tasarımı tamamlayıp form adımına geçin.</p>';
  toolbar.before(invitation);
  document.querySelector('.hero .lead').textContent='Ankara merkezli akıllı ev projelendirme ve kurulum: aydınlatma, perde, iklimlendirme ve güvenlik sensörlerini evinize uygun senaryolarla bir araya getiriyoruz. 3B demoda seçenekleri deneyin, kendi planınızı hazırlayın.';
  // A single control group at a time keeps the house visible and the remote legible.

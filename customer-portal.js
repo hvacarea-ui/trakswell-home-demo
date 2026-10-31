@@ -3,9 +3,9 @@
  const $=id=>document.getElementById(id),result=$('request-result');if(!result)return;
  if(window.TRAKSWELL_PUBLIC_API!==true){
   const intro=$('request-intro');if(intro)intro.firstChild.textContent='Seçimlerinizi ve iletişim bilgilerinizi tek bir özette hazırlayın. Bu önizlemede gönderim kapalıdır. ';
-  $('delivery-note').textContent='Tasarım önizlemesi: VPS henüz bağlı değil. Form bir özet hazırlar; hiçbir kişisel bilgi sunucuya gönderilmez. Planı dosya olarak indirebilirsiniz.';
-  const privacy=document.querySelector('#veri-bilgisi .wrap>p:not(.eyebrow)');if(privacy)privacy.textContent='Bu statik önizlemede form bilgileri ve ev planı sunucuya gönderilmez. Tasarım bu açık sayfanın belleğinde tutulur. Kaybetmemek için planı JSON olarak indirin. Önceki sürümde cihazınıza kaydedilmiş planlar otomatik silinmez.';
-  $('f').addEventListener('submit',()=>{if(!$('f').querySelector('[aria-invalid="true"]'))$('ok').textContent='Özetiniz hazır. VPS bağlantısı kapalı olduğu için gönderim yapılmadı. Metni kopyalayabilir veya planı indirebilirsiniz.';});return;
+  $('delivery-note').textContent='Bu sürümde gönderim kapalıdır. Form bir özet hazırlar; bilgileriniz bize iletilmez. Metni kopyalayabilir, planı dosya olarak indirebilirsiniz.';
+  const privacy=document.querySelector('#veri-bilgisi .wrap>p:not(.eyebrow)');if(privacy)privacy.textContent='Bu sürümde form bilgileri ve ev planı sunucuya gönderilmez. Tasarım bu açık sayfanın belleğinde tutulur. Kaybetmemek için planı JSON olarak indirin. Önceki sürümde cihazınıza kaydedilmiş planlar otomatik silinmez.';
+  $('f').addEventListener('submit',()=>{if(!$('f').querySelector('[aria-invalid="true"]'))$('ok').textContent='Özetiniz hazır; gönderim yapılmadı. Bu sürümde talepler bize iletilmez. Metni kopyalayabilir veya planı indirebilirsiniz.';});return;
  }
  document.body.classList.add('portal-connected');
  const controls=document.createElement('div');controls.className='send-actions';
