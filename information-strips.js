@@ -33,15 +33,15 @@
      cards.append(card);
    }count.textContent=(index+1)+' / '+items.length;}
    function schedule(){clearTimeout(timer);timer=null;if(paused||hover||focused||document.hidden||!visible)return;timer=setTimeout(()=>{const rect=row.getBoundingClientRect();if(rect.bottom>0&&rect.top<innerHeight)advance(1);schedule();},8000);}
-   function state(){pause.textContent=paused?'Oynat':'Duraklat';pause.setAttribute('aria-label',title+' · '+pause.textContent);schedule();}
+   function state(){cards.setAttribute('aria-live',paused?'polite':'off');pause.textContent=paused?'Oynat':'Duraklat';pause.setAttribute('aria-label',title+' · '+pause.textContent);schedule();}
    function advance(direction){index=(index+direction+items.length)%items.length;render();}
    previous.addEventListener('click',()=>{paused=true;state();advance(-1);});next.addEventListener('click',()=>{paused=true;state();advance(1);});pause.addEventListener('click',()=>{paused=!paused;state();});
    row.addEventListener('mouseenter',()=>{hover=true;schedule();});row.addEventListener('mouseleave',()=>{hover=false;schedule();});
-   row.addEventListener('focusin',()=>{focused=true;schedule();});row.addEventListener('focusout',e=>{focused=row.contains(e.relatedTarget);schedule();});
+   row.addEventListener('focusin',()=>{focused=true;paused=true;state();});row.addEventListener('focusout',e=>{focused=row.contains(e.relatedTarget);schedule();});
    document.addEventListener('visibilitychange',schedule);
    if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule();},{threshold:0}).observe(row);
    reduced.addEventListener('change',()=>{if(reduced.matches){paused=true;state();}});
-   compact.addEventListener('change',()=>{render();schedule();});state();render();
+   compact.addEventListener('change',()=>{const linkIndex=[...cards.querySelectorAll('a')].indexOf(document.activeElement);render();if(linkIndex>=0)(cards.querySelectorAll('a')[Math.min(linkIndex,size()-1)]||pause).focus();schedule();});state();render();
  }
  strip('Evinizde neler değişir?',benefits,'benefit-strip-title','evinizde-neler-degisir');
  strip('Merak ettikleriniz',questions,'question-strip-title','sorular');

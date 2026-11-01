@@ -383,12 +383,12 @@ $('f').addEventListener('submit',e=>{
   e.preventDefault();
   const ok=$('ok'),name=$('ad').value.trim(),phone=normalizePhone($('tel').value),email=$('eposta').value.trim();
   const wantsEmail=!$('eposta').disabled;
-  fieldError('ad',(name.length<2||name.length>100)?'Lütfen adınızı ve soyadınızı yazın.':'');
+  fieldError('ad',(name.length<2||name.length>100)?'Ad ve soyad alanını 2–100 karakterle doldurun.':'');
   fieldError('tel',(!wantsEmail||$('tel').value.trim())&&!phone?'Geçerli bir Türkiye telefon numarası girin (ör. 0532 123 45 67).':'');
   fieldError('eposta',wantsEmail&&(!email||!$('eposta').validity.valid)?'Geçerli bir e-posta adresi girin.':'');
   const invalid=$('f').querySelector('[aria-invalid="true"]');
   ok.hidden=false;$('request-result').hidden=true;
-  if(invalid){ok.classList.add('err');ok.textContent='Lütfen işaretli alanları kontrol edin.';invalid.focus();return;}
+  if(invalid){ok.classList.add('err');ok.textContent='Talep hazırlanamadı. '+[...$('f').querySelectorAll('.field-error:not([hidden])')].map(node=>node.textContent).join(' ');invalid.focus();return;}
   ok.classList.remove('err');
   const systems=[...document.querySelectorAll('input[name=sy]:checked')].map(i=>i.value).join(', ')||'Görüşmede belirlemek istiyorum';
   const preference=document.querySelector('input[name=zm]:checked').value;
@@ -409,6 +409,7 @@ $('f').addEventListener('submit',e=>{
   $('send-email').hidden=!CONTACT.email;
   if(CONTACT.email)$('send-email').href='mailto:'+CONTACT.email+'?subject='+encodeURIComponent('Akıllı ev teklif talebi')+'&body='+encodeURIComponent(message);
   ok.textContent='Özetiniz hazır; henüz gönderilmedi. Aşağıdan talebinizi gönderin veya tasarımınızı kaydedin.';
+  $('request-result').focus({preventScroll:true});
 });
 $('copy-request').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText($('request-text').value);$('ok').textContent='Talep metni kopyalandı. Henüz gönderilmedi.';}

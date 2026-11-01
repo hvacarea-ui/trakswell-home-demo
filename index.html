@@ -399,8 +399,8 @@
       <p class="form-note full" id="request-intro">Talep özetini kontrol ettikten sonra bilgilerinizi ve varsa ev planınızı bize gönderebilir veya yalnızca tasarımınızı kaydedebilirsiniz. <a href="#veri-bilgisi">Veriler nasıl kullanılır?</a></p><p class="form-note full" id="delivery-note">Önce talebinizi hazırlayın. Son adımda “Talebimi gönder” veya “Yalnızca tasarımımı kaydet” seçeneğini kullanın.</p>
       <button class="btn btn-lamp full" type="submit">Teklif talebini hazırla</button>
       <div class="ok" id="ok" role="status" aria-live="polite" hidden></div>
-      <div class="full" id="request-result" hidden>
-        <label for="request-text">Talep özeti</label>
+      <div class="full" id="request-result" role="region" aria-labelledby="request-summary-label" tabindex="-1" hidden>
+        <label for="request-text" id="request-summary-label">Talep özeti · Henüz gönderilmedi</label>
         <p>Gönderimden önce <a href="privacy.html" target="_blank" rel="noopener noreferrer">aydınlatma ve veri kullanımı açıklamasını</a> inceleyin. Kampanya izni alınmaz.</p><textarea class="request-preview" id="request-text" readonly></textarea>
         <div class="send-actions">
           <button class="btn btn-ghost" type="button" id="download-request-plan" hidden>Plan dosyasını indir</button><button class="btn btn-ghost" type="button" id="copy-request">Metni kopyala</button>
@@ -420,14 +420,15 @@
 
 
 
-<script src="site.js?v=20261101-local"></script>
+<script src="accessibility.js?v=20261101-a11y"></script>
+<script src="site.js?v=20261101-a11y"></script>
 <script src="three.min.js"></script>
 <script src="design-catalog.js?v=20261029-design"></script>
 <script src="plan-editor.js?v=20261031-drag"></script>
 <script src="house-3d.js?v=20261031-touch"></script>
-<script src="experience.js?v=20261031-mobile-studio2"></script>
+<script src="experience.js?v=20261101-a11y"></script>
 <script src="home-preview.js?v=20261029-duplex"></script>
-<script src="information-strips.js?v=20261031-mobile"></script>
+<script src="information-strips.js?v=20261101-a11y"></script>
 <script src="design-workspace.js?v=20261029-design"></script>
 <script src="design-assistant-engine.js?v=20261031-fixes"></script>
 <script src="design-assistant.js?v=20261029-assistant"></script>
