@@ -5,7 +5,7 @@
   --lamp:#E2A33B; --lamp-ink:#8A5A0E; --lamp-soft:#F6E6C6; --ok:#4365B0;
   --night:#141416; --night-2:#202024; --night-line:#38383F; --night-ink:#F5F5F7; --night-muted:#ABABB5;
   --display:"Red Hat Display",ui-sans-serif,system-ui,sans-serif;
-  --body:"Red Hat Text",ui-sans-serif,system-ui,sans-serif;
+  --body:"Red Hat Text",ui-sans-serif,"Red Hat Text",system-ui,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --r:14px;
 }

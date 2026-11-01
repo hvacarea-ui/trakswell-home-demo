@@ -1,5 +1,5 @@
 /* Presentation layer: a consistent layout for the local launch preview. */
-:root{--display:"Segoe UI",Arial,sans-serif;--body:"Segoe UI",Arial,sans-serif;--mono:Consolas,monospace;--lamp:#eab668;--night:#17191d;--night-2:#22252b;--night-line:#3d414a;--night-muted:#b8bdc7;--r:18px}
+:root{--display:"Red Hat Display",Arial,sans-serif;--body:"Red Hat Text",Arial,sans-serif;--mono:"JetBrains Mono",Consolas,monospace;--lamp:#eab668;--night:#17191d;--night-2:#22252b;--night-line:#3d414a;--night-muted:#b8bdc7;--r:18px}
 body{margin:0}button,input,select,textarea{font:inherit}a,button,input,select,textarea,summary{-webkit-tap-highlight-color:transparent}button,a,summary{touch-action:manipulation}
 .wrap{max-width:1280px}header{background:#17191df5;backdrop-filter:blur(16px)}header .nav{max-width:1440px;height:76px}.brand i{height:38px;width:38px;border-radius:12px}.brand{font-size:1.2rem}.nav .btn{min-height:44px}
 .hero{background:radial-gradient(ellipse at 80% 0%,#49372555,transparent 45%),#17191d;padding-block:64px 48px}.hero::after{display:none}.hero>.wrap{max-width:1440px;padding-inline:32px}.hero-grid{gap:40px}.hero-grid>div:first-child{max-width:1100px}.hero h1{font-size:clamp(3.6rem,7.2vw,7rem);line-height:.98;letter-spacing:-.065em;margin:24px 0}.hero h1 em{font-weight:500}.hero .eyebrow{letter-spacing:.16em}.hero .lead{font-size:clamp(1.05rem,1.65vw,1.3rem);line-height:1.65;max-width:650px}.hero .ctas{margin-top:28px;gap:12px}.btn{min-height:48px;white-space:normal;justify-content:center;line-height:1.3}.hero .facts{font-size:.8rem;gap:12px 24px;margin-top:28px}
@@ -119,13 +119,13 @@ main>details.site-information{max-width:none;width:min(var(--page-max),calc(100%
 .plan-wrap.showroom-active #house-3d canvas{touch-action:none}
 
 /* === Okunur cihaz etiketleri (HTML, sabit yazı boyutu) === */
-#house-3d .device-label{position:absolute;z-index:1;transform:translate(-50%,-100%);padding:3px 8px;border-radius:6px;border:1px solid #f5d59e66;background:#10151dea;color:#f5d59e;font:600 .72rem/1.3 var(--body,system-ui,sans-serif);white-space:nowrap;pointer-events:none}
+#house-3d .device-label{position:absolute;z-index:1;transform:translate(-50%,-100%);padding:3px 8px;border-radius:6px;border:1px solid #f5d59e66;background:#10151dea;color:#f5d59e;font:600 .72rem/1.3 var(--body,"Red Hat Text",system-ui,sans-serif);white-space:nowrap;pointer-events:none}
 #house-3d button.device-label{pointer-events:auto;cursor:pointer;min-height:24px;border-color:#f5d59e}
 #house-3d button.device-label:hover{background:#2a2f38}
 #house-3d button.device-label:focus-visible{outline:2px solid #f5d59e;outline-offset:2px}
 
 /* === Tekerlek ipucu (yalnızca fare kullanıcısına görsel bilgi) === */
-#house-3d .wheel-hint{position:absolute;left:50%;bottom:14px;z-index:2;transform:translateX(-50%);padding:7px 12px;border-radius:8px;background:#10151df2;color:#f5f5f7;font:500 .78rem/1.3 var(--body,system-ui,sans-serif);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s}
+#house-3d .wheel-hint{position:absolute;left:50%;bottom:14px;z-index:2;transform:translateX(-50%);padding:7px 12px;border-radius:8px;background:#10151df2;color:#f5f5f7;font:500 .78rem/1.3 var(--body,"Red Hat Text",system-ui,sans-serif);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s}
 #house-3d .wheel-hint.is-visible{opacity:1}
 
 /* Görsel olarak gizli, ekran okuyucuya açık metin */

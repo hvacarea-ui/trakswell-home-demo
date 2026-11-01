@@ -241,8 +241,9 @@ $('greeting-name').addEventListener('input',()=>{
 $('greeting-listen').addEventListener('click',()=>{
  choosePanelScene('sabah');$('greeting-preview').textContent=greetingText();
  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){$('voice-feedback').textContent='Bu tarayıcıda seslendirme desteklenmiyor. Karşılama metni ekranda gösteriliyor.';return;}
- const speech=new window.SpeechSynthesisUtterance(greetingText());speech.lang='tr-TR';speech.rate=.9;speech.volume=.75;
- const voice=window.speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith('tr'));if(voice)speech.voice=voice;
+ const voice=window.speechSynthesis.getVoices().find(v=>v.localService===true&&v.lang.toLowerCase().startsWith('tr'));
+ if(!voice){$('voice-feedback').textContent='Cihazınızda çevrimdışı Türkçe ses bulunamadı. Karşılama metniniz ekranda gösteriliyor; çevrim içi ses hizmetine gönderilmez.';return;}
+ const speech=new window.SpeechSynthesisUtterance(greetingText());speech.lang='tr-TR';speech.rate=.9;speech.volume=.75;speech.voice=voice;
  speech.onerror=()=>{$('voice-feedback').textContent='Seslendirme tamamlanamadı. Cihazın ses ve Türkçe ses desteğini kontrol edin.';};
  window.speechSynthesis.speak(speech);$('voice-feedback').textContent='Loş sabah ışıkları açıldı. Karşılama seslendiriliyor: '+greetingText();
 });
@@ -319,8 +320,8 @@ $('flt').addEventListener('click',e=>{const b=e.target.closest('.chip-l');if(!b)
   $('flt').querySelectorAll('.chip-l').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
   document.querySelectorAll('#scen .scen').forEach(c=>c.hidden=!(b.dataset.f==='all'||c.dataset.c===b.dataset.f));});
 
-// İşletme iletişim bilgileri: WhatsApp için ülke koduyla yalnızca rakam girin.
-const CONTACT = { whatsapp: '', email: '' };
+// İşletme iletişim bilgileri; harici mesajlaşma servisi kullanılmaz.
+const CONTACT = { phone: '', email: '' };
 let requestPlan=null;
 // One textual summary serves both the form preview and the downloadable request.
 // The editor owns the item catalog so exported item IDs always use its labels.
@@ -369,9 +370,9 @@ mainMenu.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menuToggle.getAttribute('aria-expanded')==='true'){closeMenu();menuToggle.focus();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.nav'))closeMenu();});
 matchMedia('(min-width:1101px)').addEventListener('change',closeMenu);
-if(CONTACT.whatsapp){$('business-phone').hidden=false;$('phone-link').textContent='+'+CONTACT.whatsapp;$('phone-link').href='tel:+'+CONTACT.whatsapp;}
+if(CONTACT.phone){$('business-phone').hidden=false;$('phone-link').textContent='+'+CONTACT.phone;$('phone-link').href='tel:+'+CONTACT.phone;}
 if(CONTACT.email){$('business-email').hidden=false;$('email-link').textContent=CONTACT.email;$('email-link').href='mailto:'+CONTACT.email;}
-if(CONTACT.whatsapp||CONTACT.email)$('delivery-note').textContent='Önce talebinizi kontrol edin, ardından WhatsApp veya e-posta uygulamanızda gönderimi tamamlayın. Form bilgileri bu sayfada kaydedilmez.';
+if(CONTACT.email)$('delivery-note').textContent='Önce talebinizi kontrol edin; e-posta taslağını kendi uygulamanızda inceleyip gönderebilirsiniz. Otomatik e-posta gönderilmez.';
 function syncEmail(){const active=document.querySelector('input[name=zm]:checked').value==='E-posta';$('email-field').hidden=!active;$('eposta').disabled=!active;$('eposta').required=active;$('tel').required=!active;$('phone-label').textContent=active?'Telefon (isteğe bağlı)':'Telefon';if(active)fieldError('tel','');if(!active)fieldError('eposta','');}
 function fieldError(id,message){$(id).setAttribute('aria-invalid',String(!!message));$(id+'-error').textContent=message;$(id+'-error').hidden=!message;}
 function normalizePhone(value){const text=value.trim();if(!/^\+?[\d\s().-]+$/.test(text))return null;let digits=text.replace(/\D/g,'');if(text.startsWith('+')&&!digits.startsWith('90'))return null;if(digits.startsWith('0090'))digits=digits.slice(4);else if(digits.startsWith('90')&&digits.length===12)digits=digits.slice(2);else if(digits.startsWith('0')&&digits.length===11)digits=digits.slice(1);return /^[2-5]\d{9}$/.test(digits)?'+90'+digits:null;}
@@ -405,8 +406,7 @@ $('f').addEventListener('submit',e=>{
   $('download-request-plan').hidden=!requestPlan;$('plan-email-note').hidden=!requestPlan||!CONTACT.email;
   const message=lines.join('\n');
   $('request-text').value=message;$('request-result').hidden=false;
-  $('send-whatsapp').hidden=!CONTACT.whatsapp;$('send-email').hidden=!CONTACT.email;
-  if(CONTACT.whatsapp)$('send-whatsapp').href='https://wa.me/'+CONTACT.whatsapp+'?text='+encodeURIComponent(message);
+  $('send-email').hidden=!CONTACT.email;
   if(CONTACT.email)$('send-email').href='mailto:'+CONTACT.email+'?subject='+encodeURIComponent('Akıllı ev teklif talebi')+'&body='+encodeURIComponent(message);
   ok.textContent='Özetiniz hazır; henüz gönderilmedi. Aşağıdan talebinizi gönderin veya tasarımınızı kaydedin.';
 });
