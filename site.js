@@ -321,7 +321,8 @@ $('flt').addEventListener('click',e=>{const b=e.target.closest('.chip-l');if(!b)
   document.querySelectorAll('#scen .scen').forEach(c=>c.hidden=!(b.dataset.f==='all'||c.dataset.c===b.dataset.f));});
 
 // İşletme iletişim bilgileri; harici mesajlaşma servisi kullanılmaz.
-const CONTACT = { phone: '', email: '' };
+// Publishing a contact address does not enable form-based email delivery.
+const CONTACT = { phone: '', email: 'info@trakswellhome.com', requestEmail: '' };
 let requestPlan=null;
 // One textual summary serves both the form preview and the downloadable request.
 // The editor owns the item catalog so exported item IDs always use its labels.
@@ -372,7 +373,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.nav'))closeMenu();}
 matchMedia('(min-width:1101px)').addEventListener('change',closeMenu);
 if(CONTACT.phone){$('business-phone').hidden=false;$('phone-link').textContent='+'+CONTACT.phone;$('phone-link').href='tel:+'+CONTACT.phone;}
 if(CONTACT.email){$('business-email').hidden=false;$('email-link').textContent=CONTACT.email;$('email-link').href='mailto:'+CONTACT.email;}
-if(CONTACT.email)$('delivery-note').textContent='Önce talebinizi kontrol edin; e-posta taslağını kendi uygulamanızda inceleyip gönderebilirsiniz. Otomatik e-posta gönderilmez.';
+if(CONTACT.requestEmail)$('delivery-note').textContent='Önce talebinizi kontrol edin; e-posta taslağını kendi uygulamanızda inceleyip gönderebilirsiniz. Otomatik e-posta gönderilmez.';
 function syncEmail(){const active=document.querySelector('input[name=zm]:checked').value==='E-posta';$('email-field').hidden=!active;$('eposta').disabled=!active;$('eposta').required=active;$('tel').required=!active;$('phone-label').textContent=active?'Telefon (isteğe bağlı)':'Telefon';if(active)fieldError('tel','');if(!active)fieldError('eposta','');}
 function fieldError(id,message){$(id).setAttribute('aria-invalid',String(!!message));$(id+'-error').textContent=message;$(id+'-error').hidden=!message;}
 function normalizePhone(value){const text=value.trim();if(!/^\+?[\d\s().-]+$/.test(text))return null;let digits=text.replace(/\D/g,'');if(text.startsWith('+')&&!digits.startsWith('90'))return null;if(digits.startsWith('0090'))digits=digits.slice(4);else if(digits.startsWith('90')&&digits.length===12)digits=digits.slice(2);else if(digits.startsWith('0')&&digits.length===11)digits=digits.slice(1);return /^[2-5]\d{9}$/.test(digits)?'+90'+digits:null;}
@@ -403,11 +404,11 @@ $('f').addEventListener('submit',e=>{
     lines.push('','Müşterinin hazırladığı ev planı:',...describeRequestPlan(requestPlan),
       'Tam ölçüler ve oda içi yerleşimler plan dosyasındadır. Plan dosyası ayrıca indirilebilir.');
   }
-  $('download-request-plan').hidden=!requestPlan;$('plan-email-note').hidden=!requestPlan||!CONTACT.email;
+  $('download-request-plan').hidden=!requestPlan;$('plan-email-note').hidden=!requestPlan||!CONTACT.requestEmail;
   const message=lines.join('\n');
   $('request-text').value=message;$('request-result').hidden=false;
-  $('send-email').hidden=!CONTACT.email;
-  if(CONTACT.email)$('send-email').href='mailto:'+CONTACT.email+'?subject='+encodeURIComponent('Akıllı ev teklif talebi')+'&body='+encodeURIComponent(message);
+  $('send-email').hidden=!CONTACT.requestEmail;
+  if(CONTACT.requestEmail)$('send-email').href='mailto:'+CONTACT.requestEmail+'?subject='+encodeURIComponent('Akıllı ev teklif talebi')+'&body='+encodeURIComponent(message);
   ok.textContent='Özetiniz hazır; henüz gönderilmedi. Aşağıdan talebinizi gönderin veya tasarımınızı kaydedin.';
   $('request-result').focus({preventScroll:true});
 });
