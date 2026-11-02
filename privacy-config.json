@@ -1,13 +1,13 @@
 {
   "approved": false,
-  "noticeVersion": "2026-10-31-draft",
-  "legalName": "",
-  "address": "",
-  "contactEmail": "",
-  "purposes": "",
-  "legalBasis": "",
-  "collection": "",
-  "recipients": "",
-  "retention": "",
-  "transferAssessment": ""
+  "noticeVersion": "2026-11-02-draft",
+  "legalName": "TRAKSWELL MEKATRONİK MÜHENDİSLİK PAZARLAMA SANAYİ TİCARET LİMİTED ŞİRKETİ",
+  "address": "Yeni Batı Mahallesi, Mülk Caddesi, Gölde Luxe1 B Blok, Kapı No: 5 B, Daire No: K1, 06560 Yenimahalle / Ankara, Türkiye",
+  "contactEmail": "info@trakswellhome.com",
+  "purposes": "İlettiğiniz soruları yanıtlamak, talep ettiğiniz akıllı ev hizmetinin kapsamını değerlendirmek, keşif ve teklif görüşmesini yürütmek. İletişim bilgileriniz kampanya aboneliğine otomatik olarak eklenmez. Sitedeki plan ve teklif özeti, gönderim bağlantısı açılıncaya kadar tarayıcınızda hazırlanır; CRM'ye gönderilmez.",
+  "legalBasis": "Talep ettiğiniz teklif veya sözleşme öncesi işlemlerle doğrudan ilgili ve gerekli veriler bakımından KVKK m.5/2-c; bir hakkın tesisi, kullanılması veya korunması için zorunlu kayıtlar bakımından m.5/2-e değerlendirilir. Yeni form, sunucu kayıtları ve hizmet sağlayıcı işlemleri için uygulanacak işleme şartları, ilgili faaliyet devreye alınmadan önce ayrıca netleştirilmelidir. Bu taslak, tüm işlemleri kapsayan bir açık rıza talebi değildir.",
+  "collection": "Sizin info@trakswellhome.com adresine gönderdiğiniz e-postalar ve ekleri elektronik ortamda alınır. Web sitesine erişimde barındırma altyapısı bağlantı bilgilerini işleyebilir. Plan tasarlama ve teklif özeti hazırlama işlemleri mevcut sürümde cihazınızda çalışır; otomatik başvuru gönderimi kapalıdır.",
+  "recipients": "İletişim ve teklif taleplerini görevleri kapsamında yetkili şirket çalışanları değerlendirir. Barındırma ve e-posta hizmetleri Hostinger üzerinden sağlanır. YouTube / Google bağlantısı yalnız videoyu etkinleştirmeniz veya kanal bağlantısını açmanızla kurulur. Sağlayıcıların alt işleyenleri, erişim kapsamı ve aktarım koşulları ayrıca doğrulanmalıdır.",
+  "retention": "Teklif ve iletişim kayıtlarının saklama süreleri, silme takvimi, yedek döngüsü ve sağlayıcıların erişim kaydı süreleri henüz kesinleştirilmedi. Bu hazırlık tamamlanmadan otomatik teklif gönderimi açılmaz. Cihazınıza isteğe bağlı kaydettiğiniz planları düzenleyiciden silebilirsiniz.",
+  "transferAssessment": "Barındırma ve e-posta hizmetlerinin sunucu, yedek, destek erişimi ve alt işleyen konumları ile varsa KVKK m.9 kapsamındaki aktarım dayanağı henüz doğrulanmadı. YouTube etkinleştirildiğinde yurt dışındaki sistemlerle bağlantı kurulabilir. Yerel font ve ikon kullanımı, sağlayıcılar için yurt dışına aktarım olmadığı anlamına gelmez."
 }
